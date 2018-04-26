@@ -3,6 +3,7 @@ package com.github.builder.params;
 
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.params.annotations.NotDateField;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.criterion.MatchMode;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 public class FieldsQuery {
     /**
      * field name from entity

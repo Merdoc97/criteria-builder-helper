@@ -12,6 +12,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
+import org.hibernate.type.StringType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 /**
  * implementation description
  * for like allowed types - integer, string,
+ * for boolean types allowed only equal param , true / false
  */
 @Validated
 @AllArgsConstructor
@@ -32,7 +34,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CriteriaQuery implements CriteriaHelper {
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Override
     public final Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request) {
@@ -201,7 +203,7 @@ public class CriteriaQuery implements CriteriaHelper {
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria());
                 } else if (Objects.nonNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        return likeForInt(forClass.getDeclaredField(query.getProperty()), query.getSearchCriteria(), false, query.getMatchMode());
+                        return likeForInt(forClass.getDeclaredField(query.getProperty()), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
                 }
