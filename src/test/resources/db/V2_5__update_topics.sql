@@ -1,0 +1,1 @@
+UPDATE news SET article_topic='postgres' WHERE news_pk=2;

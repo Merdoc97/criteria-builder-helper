@@ -1,0 +1,2 @@
+ALTER TABLE news_body ALTER COLUMN article_body TYPE VARCHAR(2000);
+ALTER TABLE news_body ALTER COLUMN article_link TYPE VARCHAR(1000);

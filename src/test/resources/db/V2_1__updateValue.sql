@@ -1,0 +1,1 @@
+UPDATE news_parse_rule SET maxpagenumbers=4 WHERE rule_pk=1;

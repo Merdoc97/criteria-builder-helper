@@ -1,0 +1,1 @@
+ALTER TABLE news ADD CONSTRAINT news_topic_unique UNIQUE (article_topic);
