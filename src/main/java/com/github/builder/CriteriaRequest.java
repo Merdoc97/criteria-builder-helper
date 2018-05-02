@@ -6,6 +6,7 @@ import com.github.builder.params.FieldsQuery;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.Valid;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 public class CriteriaRequest {
     @Valid
     private Set<FieldsQuery>conditions;

@@ -270,8 +270,7 @@ public class CriteriaTest extends TestConfig {
                 )
         );
 
-        Criteria criteria = helper.buildCriteria(NewsEntity.class, request,orderFields);
-        List<NewsEntity> result = criteria.list();
+        List<NewsEntity> result = searcher.searchByParams(NewsEntity.class, request,orderFields);
         Assert.assertEquals(1, result.size());
         result.forEach(newsEntity -> {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
@@ -292,10 +291,25 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-
         Page<NewsEntity> criteria = searcher.searchByParamsWithPaging(0,10,NewsEntity.class, request,null);
         Assert.assertTrue(criteria.getContent().size()>0);
         Assert.assertEquals(criteria.getTotalPages(),2);
+
+    }
+
+    @Test
+    public void testSearchEntity(){
+        CriteriaRequest request = new CriteriaRequest();
+        request.setConditions(new HashSet<>(Arrays.asList(
+                new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
+        )));
+        request.setDateConditions(new HashSet<>(Arrays.asList(
+                new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
+        )));
+
+        NewsEntity result = searcher.searchEntity(NewsEntity.class, request,null);
+        Assert.assertNotNull(result);
+        Assert.assertEquals("java",result.getArticleTopic());
 
     }
 }

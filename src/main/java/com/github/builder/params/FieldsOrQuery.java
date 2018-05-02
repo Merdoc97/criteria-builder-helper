@@ -1,25 +1,16 @@
 package com.github.builder.params;
 
-
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.params.annotations.NotDateField;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.criterion.MatchMode;
 
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 /**
- * in current class allow to query for all params instead dates
- * if want to search by inner entity you should use comma syntax
  */
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
-public class FieldsQuery {
+public class FieldsOrQuery {
+
     /**
      * field name from entity
      */
@@ -31,7 +22,7 @@ public class FieldsQuery {
      */
     @NotNull
     @NotDateField
-    private Object searchCriteria;
+    private Set<Object> searchCriteria;
     /**
      * condition like,equal ...
      */
@@ -42,10 +33,10 @@ public class FieldsQuery {
      */
     private MatchMode matchMode;
 
-    public FieldsQuery() {
+    public FieldsOrQuery() {
     }
 
-    public FieldsQuery(String property, Object searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
+    public FieldsOrQuery(String property, Set<Object> searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
         this.property = property;
         this.searchCriteria = searchCriteria;
         this.criteriaCondition = criteriaCondition;
