@@ -3,6 +3,7 @@ package com.github.builder;
 
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
+import com.github.builder.params.OrderFields;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
@@ -10,9 +11,10 @@ import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
-import org.hibernate.type.StringType;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
@@ -92,6 +94,26 @@ public class CriteriaQuery implements CriteriaHelper {
         return criteria;
     }
 
+    @Override
+    public final Criteria buildCriteria(Class forClass, CriteriaRequest request,@Valid Set<OrderFields> orderFields) {
+        Criteria criteria= buildCriteria(forClass, request);
+        orderFields.forEach(orderField -> {
+            try {
+                if (isEntityField(forClass,orderField.getOrderField())){
+                    String alias=getAliasProperty(orderField.getOrderField());
+                    addOrder(criteria,orderField.getDirection(),alias);
+                }
+                else {
+                    addOrder(criteria,orderField.getDirection(),orderField.getOrderField());
+                }
+            } catch (NoSuchFieldException e) {
+                log.info("only entities field allowed for property query, param: {}",orderField.getOrderField().split("\\.")[0]);
+                throw new IllegalArgumentException("only entities field allowed for property query");
+            }
+        });
+        return criteria;
+    }
+
     private void buildForNonDate(Criteria criteria, Set<FieldsQuery> notDate, Class forClass) {
         if (Objects.nonNull(notDate) && !notDate.isEmpty())
             notDate.forEach(fieldsQuery -> {
@@ -137,6 +159,7 @@ public class CriteriaQuery implements CriteriaHelper {
             entityCriterias.forEach(fieldsQuery -> {
                 try {
                     if (!isEntityField(forClass, fieldsQuery.getProperty().split("\\.")[0])) {
+                        log.info("only entities field allowed for property query, param: {}",fieldsQuery.getProperty().split("\\.")[0]);
                         throw new IllegalArgumentException("only entities field allowed for property query");
                     }
                     String[] fields = fieldsQuery.getProperty().split("\\.");
@@ -322,5 +345,22 @@ public class CriteriaQuery implements CriteriaHelper {
                 return "'%" + value + "'";
         }
 
+    }
+
+    private String getAliasProperty(String searchParam){
+        String[] fields = searchParam.split("\\.");
+        String alias = fields[0] + "_1";
+        return alias.concat(".").concat(fields[1]);
+    }
+
+    private void addOrder(Criteria criteria,Sort.Direction direction,String property){
+        switch (direction){
+            case ASC:
+                criteria.addOrder(Order.asc(property));
+                break;
+            case DESC:
+                criteria.addOrder(Order.desc(property));
+                break;
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.github.test.model.config;
 
 import com.github.builder.CriteriaHelper;
 import com.github.builder.CriteriaQuery;
+import com.github.builder.EntitySearcher;
+import com.github.builder.EntitySearcherImpl;
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
@@ -127,5 +129,10 @@ public class JpaConfig {
     @Bean
     public CriteriaHelper helper(EntityManager entityManager){
         return new CriteriaQuery(entityManager);
+    }
+
+    @Bean
+    public EntitySearcher searcher(CriteriaHelper helper){
+        return new EntitySearcherImpl(helper);
     }
 }

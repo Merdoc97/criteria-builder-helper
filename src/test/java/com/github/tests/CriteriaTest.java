@@ -2,10 +2,12 @@ package com.github.tests;
 
 import com.github.builder.CriteriaHelper;
 import com.github.builder.CriteriaRequest;
+import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
+import com.github.builder.params.OrderFields;
 import com.github.test.model.config.TestConfig;
 import com.github.test.model.model.NewsBodyEntity;
 import com.github.test.model.model.NewsEntity;
@@ -16,6 +18,8 @@ import org.hibernate.exception.SQLGrammarException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -31,6 +35,9 @@ public class CriteriaTest extends TestConfig {
 
     @Autowired
     private CriteriaHelper helper;
+
+    @Autowired
+    private EntitySearcher searcher;
 
     @Test
     public void simpleQueryForBuilder() {
@@ -203,5 +210,92 @@ public class CriteriaTest extends TestConfig {
         } catch (javax.validation.ConstraintViolationException e) {
             Assert.assertEquals("date field not allowed", e.getConstraintViolations().stream().findFirst().get().getMessage());
         }
+    }
+
+    @Test
+    public void testWithSorting(){
+        CriteriaRequest request = new CriteriaRequest();
+        request.setConditions(new HashSet<>(Arrays.asList(
+                new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("isActive", true, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("isParsedToday", false, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("id", 1, CriteriaCondition.LIKE, MatchMode.START),
+                new FieldsQuery("menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("menuEntity.id", 1, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("bodyEntity.articleName", "Solving Java Issues", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("bodyEntity.articleLink", "http://www.developer.com", CriteriaCondition.LIKE, MatchMode.START)
+        )));
+        request.setDateConditions(new HashSet<>(Arrays.asList(
+                new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
+        )));
+
+        HashSet<OrderFields>orderFields=new HashSet<>(
+                Arrays.asList(new OrderFields("articleTopic", Sort.Direction.ASC))
+        );
+
+        Criteria criteria = helper.buildCriteria(NewsEntity.class, request,orderFields);
+        List<NewsEntity> result = criteria.list();
+        Assert.assertEquals(1, result.size());
+        result.forEach(newsEntity -> {
+            Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
+            Assert.assertTrue(newsEntity.getArticleTopic().contains("java"));
+            Assert.assertEquals(1, newsEntity.getBodyEntity().size());
+            Assert.assertTrue(newsEntity.getBodyEntity().get(0).getArticleName().contains("Solving Java Issues"));
+            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().get(0).getArticleDate());
+        });
+    }
+
+    @Test
+    public void testWithMultipleSorting(){
+        CriteriaRequest request = new CriteriaRequest();
+        request.setConditions(new HashSet<>(Arrays.asList(
+                new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("isActive", true, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("isParsedToday", false, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("id", 1, CriteriaCondition.LIKE, MatchMode.START),
+                new FieldsQuery("menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("menuEntity.id", 1, CriteriaCondition.EQUAL, null),
+                new FieldsQuery("bodyEntity.articleName", "Solving Java Issues", CriteriaCondition.LIKE, MatchMode.ANYWHERE),
+                new FieldsQuery("bodyEntity.articleLink", "http://www.developer.com", CriteriaCondition.LIKE, MatchMode.START)
+        )));
+        request.setDateConditions(new HashSet<>(Arrays.asList(
+                new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
+        )));
+
+        HashSet<OrderFields>orderFields=new HashSet<>(
+                Arrays.asList(new OrderFields("articleTopic", Sort.Direction.ASC),
+                        new OrderFields("menuEntity.id", Sort.Direction.DESC),
+                        new OrderFields("bodyEntity.articleName", Sort.Direction.ASC),
+                        new OrderFields("id", Sort.Direction.ASC)
+                )
+        );
+
+        Criteria criteria = helper.buildCriteria(NewsEntity.class, request,orderFields);
+        List<NewsEntity> result = criteria.list();
+        Assert.assertEquals(1, result.size());
+        result.forEach(newsEntity -> {
+            Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
+            Assert.assertTrue(newsEntity.getArticleTopic().contains("java"));
+            Assert.assertEquals(1, newsEntity.getBodyEntity().size());
+            Assert.assertTrue(newsEntity.getBodyEntity().get(0).getArticleName().contains("Solving Java Issues"));
+            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().get(0).getArticleDate());
+        });
+    }
+
+    @Test
+    public void testWithPagination(){
+        CriteriaRequest request = new CriteriaRequest();
+        request.setConditions(new HashSet<>(Arrays.asList(
+                new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
+        )));
+        request.setDateConditions(new HashSet<>(Arrays.asList(
+                new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
+        )));
+
+
+        Page<NewsEntity> criteria = searcher.searchByParamsWithPaging(0,10,NewsEntity.class, request,null);
+        Assert.assertTrue(criteria.getContent().size()>0);
+        Assert.assertEquals(criteria.getTotalPages(),2);
+
     }
 }
