@@ -159,6 +159,21 @@
 					</includes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${release-plugin-version}</version>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<releaseProfiles>release</releaseProfiles>
+					<useReleaseProfile>false</useReleaseProfile>
+					<autoVersionSubmodules>false</autoVersionSubmodules>
+					<!--bitbucket not allowed push via ssh and not allowed via ssh be carefully-->
+					<pushChanges>false</pushChanges>
+
+					<branchName>release-${project.version}</branchName>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
