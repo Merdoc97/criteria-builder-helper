@@ -35,6 +35,13 @@
 		<javax-el-api.version>3.0.1-b08</javax-el-api.version>
 	</properties>
 
+	<scm>
+		<connection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</connection>
+		<developerConnection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</developerConnection>
+		<url>https://github.com/Merdoc97/criteria-builder-helper.git</url>
+		<tag>release</tag>
+	</scm>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
