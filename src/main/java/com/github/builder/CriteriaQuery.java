@@ -1,18 +1,13 @@
 package com.github.builder;
 
 
-import com.github.builder.params.DateQuery;
-import com.github.builder.params.FieldsQuery;
-import com.github.builder.params.OrderFields;
+import com.github.builder.params.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.hibernate.sql.JoinType;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,23 +86,23 @@ public class CriteriaQuery implements CriteriaHelper {
         buildForNonDate(criteria, queryForNotEntity, forClass);
         buildForDate(criteria, dateQueries, forClass);
         buildForEntities(criteria, queryForEntities, dateQueriesForEntities, forClass);
+
         return criteria;
     }
 
     @Override
-    public final Criteria buildCriteria(Class forClass, CriteriaRequest request,@Valid Set<OrderFields> orderFields) {
-        Criteria criteria= buildCriteria(forClass, request);
+    public final Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
+        Criteria criteria = buildCriteria(forClass, request);
         orderFields.forEach(orderField -> {
             try {
-                if (isEntityField(forClass,orderField.getOrderField())){
-                    String alias=getAliasProperty(orderField.getOrderField());
-                    addOrder(criteria,orderField.getDirection(),alias);
-                }
-                else {
-                    addOrder(criteria,orderField.getDirection(),orderField.getOrderField());
+                if (isEntityField(forClass, orderField.getOrderField())) {
+                    String alias = getAliasProperty(orderField.getOrderField());
+                    addOrder(criteria, orderField.getDirection(), alias);
+                } else {
+                    addOrder(criteria, orderField.getDirection(), orderField.getOrderField());
                 }
             } catch (NoSuchFieldException e) {
-                log.info("only entities field allowed for property query, param: {}",orderField.getOrderField().split("\\.")[0]);
+                log.info("only entities field allowed for property query, param: {}", orderField.getOrderField().split("\\.")[0]);
                 throw new IllegalArgumentException("only entities field allowed for property query");
             }
         });
@@ -158,21 +153,8 @@ public class CriteriaQuery implements CriteriaHelper {
         if (Objects.nonNull(entityCriterias)) {
             entityCriterias.forEach(fieldsQuery -> {
                 try {
-                    if (!isEntityField(forClass, fieldsQuery.getProperty().split("\\.")[0])) {
-                        log.info("only entities field allowed for property query, param: {}",fieldsQuery.getProperty().split("\\.")[0]);
-                        throw new IllegalArgumentException("only entities field allowed for property query");
-                    }
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    String alias = fields[0] + "_1";
-//                            add alias to criteria
-                    if (Objects.isNull(aliasMap.get(fields[0]))) {
-                        aliasMap.put(fields[0], alias);
-                        criteria.createCriteria(fields[0], alias, JoinType.LEFT_OUTER_JOIN);
-                        criteria.setFetchMode(fields[0], FetchMode.SELECT);
-                    }
-                    String withAliasParam = alias.concat(".").concat(fields[1]);
-//                            change to alias
-                    fieldsQuery.setProperty(withAliasParam);
+                    checkAndAddCriteria(aliasMap,forClass,fieldsQuery,criteria,fields);
                     criteria.add(forNonDates(fieldsQuery, forClass, fields[0]));
 
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
@@ -188,24 +170,11 @@ public class CriteriaQuery implements CriteriaHelper {
         if (Objects.nonNull(dateQueries)) {
             dateQueries.forEach(fieldsQuery -> {
                 try {
-                    if (!isEntityField(forClass, fieldsQuery.getProperty().split("\\.")[0])) {
-                        log.info("only entities field allowed for property query: {}", fieldsQuery);
-                        throw new IllegalArgumentException("only entities field allowed for property query");
-                    }
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    String alias = fields[0] + "_1";
-//                            add alias to criteria
-                    if (Objects.isNull(aliasMap.get(fields[0]))) {
-                        aliasMap.put(fields[0], alias);
-                        criteria.createCriteria(fields[0], alias, JoinType.LEFT_OUTER_JOIN);
-                        criteria.setFetchMode(fields[0], FetchMode.SELECT);
-                    }
-                    String withAliasParam = alias.concat(".").concat(fields[1]);
-//                            change to alias
-                    fieldsQuery.setProperty(withAliasParam);
+                    checkAndAddCriteria(aliasMap,forClass,fieldsQuery,criteria,fields);
                     criteria.add(forDateCriterion(fieldsQuery));
                 } catch (NoSuchFieldException e) {
-                    log.info("wrong request search field not found :{}",fieldsQuery);
+                    log.info("wrong request search field not found :{}", fieldsQuery);
                     throw new IllegalArgumentException("wrong request search field not found");
                 }
             });
@@ -213,6 +182,23 @@ public class CriteriaQuery implements CriteriaHelper {
 
     }
 
+    private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, com.github.builder.params.Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
+        if (!isEntityField(forClass, fields[0])) {
+            log.info("only entities field allowed for property query, param: {}", fieldsQuery.getProperty().split("\\.")[0]);
+            throw new IllegalArgumentException("only entities field allowed for property query");
+        }
+
+        String alias = fields[0] + "_1";
+//                            add alias to criteria
+        if (Objects.isNull(aliasMap.get(fields[0]))) {
+            aliasMap.put(fields[0], alias);
+            criteria.createCriteria(fields[0], alias, JoinType.LEFT_OUTER_JOIN);
+            criteria.setFetchMode(fields[0], FetchMode.SELECT);
+        }
+        String withAliasParam = alias.concat(".").concat(fields[1]);
+//                            change to alias
+        fieldsQuery.setProperty(withAliasParam);
+    }
 
     private Criterion forNonDates(@Valid FieldsQuery query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
         switch (query.getCriteriaCondition()) {
@@ -230,6 +216,7 @@ public class CriteriaQuery implements CriteriaHelper {
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
                 }
+                break;
             case NOT_EQUAL:
                 return Restrictions.ne(query.getProperty(), query.getSearchCriteria());
             case NOT_LIKE:
@@ -253,7 +240,7 @@ public class CriteriaQuery implements CriteriaHelper {
         switch (dateQuery.getCriteriaCondition()) {
             case BETWEEN:
                 if (Objects.isNull(dateQuery.getSecondSearchParam())) {
-                    log.info("for condition BETWEEN second search param mustn't be null first param: {}, ",dateQuery.getProperty());
+                    log.info("for condition BETWEEN second search param mustn't be null first param: {}, ", dateQuery.getProperty());
                     throw new IllegalArgumentException("for condition BETWEEN second search param mustn't be null");
                 }
                 return Restrictions.between(dateQuery.getProperty(), dateQuery.getSearchParam(), dateQuery.getSecondSearchParam());
@@ -347,14 +334,14 @@ public class CriteriaQuery implements CriteriaHelper {
 
     }
 
-    private String getAliasProperty(String searchParam){
+    private String getAliasProperty(String searchParam) {
         String[] fields = searchParam.split("\\.");
         String alias = fields[0] + "_1";
         return alias.concat(".").concat(fields[1]);
     }
 
-    private void addOrder(Criteria criteria,Sort.Direction direction,String property){
-        switch (direction){
+    private void addOrder(Criteria criteria, Sort.Direction direction, String property) {
+        switch (direction) {
             case ASC:
                 criteria.addOrder(Order.asc(property));
                 break;

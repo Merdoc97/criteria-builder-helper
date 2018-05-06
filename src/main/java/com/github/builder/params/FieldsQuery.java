@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @EqualsAndHashCode
 @ToString
-public class FieldsQuery {
+public class FieldsQuery implements Query{
     /**
      * field name from entity
      */

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class DateQuery {
+public class DateQuery implements Query{
 
     @NotNull
     private String property;
