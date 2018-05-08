@@ -280,7 +280,7 @@ public class CriteriaTest extends TestConfig {
                 )
         );
 
-        List<NewsEntity> result = searcher.searchByParams(NewsEntity.class, request,orderFields);
+        List<NewsEntity> result = searcher.getList(NewsEntity.class, request,orderFields);
         Assert.assertEquals(1, result.size());
         result.forEach(newsEntity -> {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
@@ -301,7 +301,7 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        Page<NewsEntity> criteria = searcher.searchByParamsWithPaging(0,10,NewsEntity.class, request,null);
+        Page<NewsEntity> criteria = searcher.getPage(0,10,NewsEntity.class, request,null);
         Assert.assertTrue(criteria.getContent().size()>0);
         Assert.assertEquals(criteria.getTotalPages(),2);
 
@@ -317,7 +317,7 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        NewsEntity result = searcher.searchEntity(NewsEntity.class, request,null);
+        NewsEntity result = searcher.fingEntity(NewsEntity.class, request,null);
         Assert.assertNotNull(result);
         Assert.assertEquals("java",result.getArticleTopic());
 
@@ -325,7 +325,7 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void testSearchEntityWithSorting() {
-        Page<NewsBodyEntity> newsEntities = searcher.searchByParamsWithPaging(0, 10, NewsBodyEntity.class,
+        Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFields(
                         getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", "java", LIKE, ANYWHERE)
@@ -336,5 +336,11 @@ public class CriteriaTest extends TestConfig {
                         .addOrderField("articleName",DESC)
                         .build());
         Assert.assertTrue(newsEntities.getContent().size() > 0);
+    }
+
+    @Test
+    public void testSimplePaging(){
+        Page<NewsBodyEntity>res=searcher.getPage(0,10,NewsBodyEntity.class,getRequestBuilder().build(),null);
+        Assert.assertTrue(res.getContent().size()>0);
     }
 }

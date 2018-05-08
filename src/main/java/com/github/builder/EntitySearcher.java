@@ -10,9 +10,9 @@ import java.util.Set;
  */
 public interface EntitySearcher {
 
-    <T> List<T> searchByParams(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
+    <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
 
-    <T> Page<T> searchByParamsWithPaging(int pageNumber,int pageLength,Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
+    <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
 
-    <T> T searchEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
+    <T> T fingEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
 }

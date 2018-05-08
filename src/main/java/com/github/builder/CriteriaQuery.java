@@ -154,7 +154,7 @@ public class CriteriaQuery implements CriteriaHelper {
             entityCriterias.forEach(fieldsQuery -> {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    checkAndAddCriteria(aliasMap,forClass,fieldsQuery,criteria,fields);
+                    checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
                     criteria.add(forNonDates(fieldsQuery, forClass, fields[0]));
 
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
@@ -171,7 +171,7 @@ public class CriteriaQuery implements CriteriaHelper {
             dateQueries.forEach(fieldsQuery -> {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    checkAndAddCriteria(aliasMap,forClass,fieldsQuery,criteria,fields);
+                    checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
                     criteria.add(forDateCriterion(fieldsQuery));
                 } catch (NoSuchFieldException e) {
                     log.info("wrong request search field not found :{}", fieldsQuery);

@@ -27,7 +27,7 @@ public class EntitySearcherImpl implements EntitySearcher {
 
 
     @Override
-    public <T> List<T> searchByParams(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             return criteriaHelper.buildCriteria(forClass, request).list();
         }
@@ -35,7 +35,7 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> Page<T> searchByParamsWithPaging(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
 
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
@@ -50,7 +50,7 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> T searchEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> T fingEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
             Page<T>result=getPage(0,1,criteria,null,forClass);
