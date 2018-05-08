@@ -14,5 +14,6 @@ public interface EntitySearcher {
 
     <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
 
-    <T> T fingEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
+    <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
+
 }

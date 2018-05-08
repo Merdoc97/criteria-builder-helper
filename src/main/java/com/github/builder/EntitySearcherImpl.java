@@ -39,53 +39,53 @@ public class EntitySearcherImpl implements EntitySearcher {
 
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
-            return getPage(pageNumber,pageLength,criteria,null,forClass);
+            return getPage(pageNumber, pageLength, criteria, null);
 
         }
         //        copy the same for count query
-        CriteriaRequest criteriaCount=new CriteriaRequest(request);
+        CriteriaRequest criteriaCount = new CriteriaRequest(request);
         Criteria criteria = criteriaHelper.buildCriteria(forClass, request, orderFields);
-        Criteria forCount=criteriaHelper.buildCriteria(forClass, criteriaCount);
-        return getPage(pageNumber,pageLength,criteria,forCount,forClass);
+        Criteria forCount = criteriaHelper.buildCriteria(forClass, criteriaCount);
+        return getPage(pageNumber, pageLength, criteria, forCount);
     }
 
     @Override
-    public <T> T fingEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
-            Page<T>result=getPage(0,1,criteria,null,forClass);
+            Page<T> result = getPage(0, 1, criteria, null);
             if (!result.getContent().isEmpty())
                 return result.getContent().get(0);
         }
         Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
-        Page<T>result=getPage(0,1,criteria,null,forClass);
+        Page<T> result = getPage(0, 1, criteria, null);
         if (!result.getContent().isEmpty())
             return result.getContent().get(0);
         else {
-            log.info("entity not found for request : {}",request.toString());
+            log.info("entity not found for request : {}", request.toString());
             throw new EntityNotFoundException("entity with request not found request : ".concat(request.toString()));
         }
 
     }
 
-    private <T> Page<T> getPage(int pageNumber, int pageLength, Criteria criteria,Criteria withoutSorting,Class forClass) {
+    private <T> Page<T> getPage(int pageNumber, int pageLength, Criteria criteria, Criteria withoutSorting) {
         criteria.setFirstResult(pageNumber * pageLength);
         criteria.setMaxResults(pageLength);
         List<T> response = criteria.list();
         Long total = null;
         ProjectionList projectionList = Projections.projectionList();
         projectionList.add(Projections.rowCount());
-        if (Objects.nonNull(withoutSorting)){
+        if (Objects.nonNull(withoutSorting)) {
 
             withoutSorting.setProjection(projectionList);
             withoutSorting.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-            total= (Long) withoutSorting.uniqueResult();
+            total = (Long) withoutSorting.uniqueResult();
         }
-        if (Objects.isNull(withoutSorting)){
+        if (Objects.isNull(withoutSorting)) {
 
             criteria.setProjection(projectionList);
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-            total= (Long) criteria.uniqueResult();
+            total = (Long) criteria.uniqueResult();
         }
 
         return new PageImpl<>(response, new PageRequest(pageNumber, pageLength), total);

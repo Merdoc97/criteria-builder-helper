@@ -1,6 +1,5 @@
 package com.github.builder.params;
 
-
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.params.annotations.NotDateField;
 import lombok.EqualsAndHashCode;
@@ -10,18 +9,15 @@ import lombok.ToString;
 import org.hibernate.criterion.MatchMode;
 
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.List;
 
 /**
- * in current class allow to query for all params instead dates
- * if want to search by inner entity you should use comma syntax
+ * current wrapper it representation of fieldsQuery with single searchParam
  */
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
-public class FieldsQuery implements Query{
+public class FieldsQueryWrap implements Query {
     /**
      * field name from entity
      */
@@ -32,7 +28,8 @@ public class FieldsQuery implements Query{
      * value for search
      */
     @NotNull
-    private List<Object> searchCriteria;
+    @NotDateField
+    private Object searchCriteria;
     /**
      * condition like,equal ...
      */
@@ -43,21 +40,13 @@ public class FieldsQuery implements Query{
      */
     private MatchMode matchMode;
 
-    public FieldsQuery() {
+    public FieldsQueryWrap() {
     }
 
-    public FieldsQuery(String property, List<Object> searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
+    public FieldsQueryWrap(String property, Object searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
         this.property = property;
         this.searchCriteria = searchCriteria;
         this.criteriaCondition = criteriaCondition;
         this.matchMode = matchMode;
     }
-
-    public FieldsQuery(String property, Object searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
-        this.property = property;
-        this.searchCriteria = Arrays.asList(searchCriteria);
-        this.criteriaCondition = criteriaCondition;
-        this.matchMode = matchMode;
-    }
-
 }

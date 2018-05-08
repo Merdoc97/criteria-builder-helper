@@ -16,6 +16,7 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.exception.SQLGrammarException;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,9 +27,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.github.builder.condition.CriteriaCondition.EQUAL;
-import static com.github.builder.condition.CriteriaCondition.LIKE;
-
+import static com.github.builder.condition.CriteriaCondition.*;
 import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static com.github.builder.fields_query_builder.FieldsQueryBuilder.getFieldsBuilder;
 import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
@@ -95,70 +94,71 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testLikesStart(){
+    public void testLikesStart() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("bodyEntity.articleName", "DUMP-2016:", LIKE, MatchMode.START)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
-        Assert.assertEquals(1,result.size());
+        Assert.assertEquals(1, result.size());
         Assert.assertTrue(result.get(0).getBodyEntity().get(0).getArticleName().startsWith("DUMP-2016:"));
     }
 
     @Test
-    public void testLikesExact(){
+    public void testLikesExact() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, EXACT)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
-        Assert.assertEquals(1,result.size());
-        Assert.assertEquals("java",result.get(0).getArticleTopic());
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("java", result.get(0).getArticleTopic());
     }
 
     @Test
-    public void testLikesEnd(){
+    public void testLikesEnd() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "blog", LIKE, MatchMode.END)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
-        Assert.assertEquals(4,result.size());
+        Assert.assertEquals(4, result.size());
     }
 
     @Test
-    public void testLessDate(){
+    public void testLessDate() {
         CriteriaRequest request = new CriteriaRequest();
         request.setDateConditions(new HashSet<>(Arrays.asList(
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.LESS)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
-        Assert.assertTrue(result.size()==0);
+        Assert.assertTrue(result.size() == 0);
     }
 
     @Test
-    public void testBetweenDate(){
+    public void testBetweenDate() {
         CriteriaRequest request = new CriteriaRequest();
         request.setDateConditions(new HashSet<>(Arrays.asList(
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-16"), LocalDate.parse("2017-03-18"), CriteriaDateCondition.BETWEEN)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
-        Assert.assertTrue(result.size()>0);
+        Assert.assertTrue(result.size() > 0);
     }
 
     @Test(expected = SQLGrammarException.class)
-    public void testInject(){
+    public void testInject() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("id", ";UPDATE news SET article_topic='inject'; select 1", LIKE, MatchMode.END)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
-        List<NewsEntity> result = criteria.list();;
+        List<NewsEntity> result = criteria.list();
+        ;
     }
 
     @Test
@@ -191,6 +191,7 @@ public class CriteriaTest extends TestConfig {
 
     }
 
+    @Ignore
     @Test(expected = javax.validation.ConstraintViolationException.class)
     public void testConstrains() {
         CriteriaRequest request = new CriteriaRequest();
@@ -200,13 +201,14 @@ public class CriteriaTest extends TestConfig {
         helper.buildCriteria(NewsEntity.class, request);
     }
 
-    @Test(expected = javax.validation.ConstraintViolationException.class)
+    @Test
     public void testConstrainsForDates() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", LocalDate.now(), LIKE, ANYWHERE)
         )));
-        helper.buildCriteria(NewsEntity.class, request);
+        List<NewsEntity> result = helper.buildCriteria(NewsEntity.class, request).list();
+        Assert.assertTrue(result.size() == 0);
     }
 
     @Test
@@ -223,15 +225,15 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithSorting(){
+    public void testWithSorting() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
-                new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
+                new FieldsQuery("articleTopic", Arrays.asList("java", "docker"), LIKE, ANYWHERE),
                 new FieldsQuery("isActive", true, EQUAL, null),
                 new FieldsQuery("isParsedToday", false, EQUAL, null),
-                new FieldsQuery("id", 1, LIKE, MatchMode.START),
+                new FieldsQuery("id", Arrays.asList(1, 2, 3), LIKE, MatchMode.START),
                 new FieldsQuery("menuEntity.menuName", "general", LIKE, ANYWHERE),
-                new FieldsQuery("menuEntity.id", 1, EQUAL, null),
+                new FieldsQuery("menuEntity.id", Arrays.asList(1, 3, 2, 5), EQUAL, null),
                 new FieldsQuery("bodyEntity.articleName", "Solving Java Issues", LIKE, ANYWHERE),
                 new FieldsQuery("bodyEntity.articleLink", "http://www.developer.com", LIKE, MatchMode.START)
         )));
@@ -239,11 +241,11 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        HashSet<OrderFields>orderFields=new HashSet<>(
+        HashSet<OrderFields> orderFields = new HashSet<>(
                 Arrays.asList(new OrderFields("articleTopic", ASC))
         );
 
-        Criteria criteria = helper.buildCriteria(NewsEntity.class, request,orderFields);
+        Criteria criteria = helper.buildCriteria(NewsEntity.class, request, orderFields);
         List<NewsEntity> result = criteria.list();
         Assert.assertEquals(1, result.size());
         result.forEach(newsEntity -> {
@@ -256,7 +258,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithMultipleSorting(){
+    public void testWithMultipleSorting() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
@@ -272,7 +274,7 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        HashSet<OrderFields>orderFields=new HashSet<>(
+        HashSet<OrderFields> orderFields = new HashSet<>(
                 Arrays.asList(new OrderFields("articleTopic", ASC),
                         new OrderFields("menuEntity.id", DESC),
                         new OrderFields("bodyEntity.articleName", ASC),
@@ -280,7 +282,7 @@ public class CriteriaTest extends TestConfig {
                 )
         );
 
-        List<NewsEntity> result = searcher.getList(NewsEntity.class, request,orderFields);
+        List<NewsEntity> result = searcher.getList(NewsEntity.class, request, orderFields);
         Assert.assertEquals(1, result.size());
         result.forEach(newsEntity -> {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
@@ -292,7 +294,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithPagination(){
+    public void testWithPagination() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE)
@@ -301,14 +303,14 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        Page<NewsEntity> criteria = searcher.getPage(0,10,NewsEntity.class, request,null);
-        Assert.assertTrue(criteria.getContent().size()>0);
-        Assert.assertEquals(criteria.getTotalPages(),2);
+        Page<NewsEntity> criteria = searcher.getPage(0, 10, NewsEntity.class, request, null);
+        Assert.assertTrue(criteria.getContent().size() > 0);
+        Assert.assertEquals(criteria.getTotalPages(), 2);
 
     }
 
     @Test
-    public void testSearchEntity(){
+    public void testSearchEntity() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE)
@@ -317,30 +319,36 @@ public class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        NewsEntity result = searcher.fingEntity(NewsEntity.class, request,null);
+        NewsEntity result = searcher.findEntity(NewsEntity.class, request, null);
         Assert.assertNotNull(result);
-        Assert.assertEquals("java",result.getArticleTopic());
+        Assert.assertEquals("java", result.getArticleTopic());
 
     }
 
     @Test
     public void testSearchEntityWithSorting() {
+
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFields(
                         getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
-                                .addField("articleName", "java", LIKE, ANYWHERE)
-                                .addField("newsEntity.isActive",true,EQUAL,null)
+                                .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
+                                .addField("newsEntity.isActive", true, EQUAL, null)
+                                .addField("newsEntity.id", 2, LESS, null)
+                                .addField("newsEntity.id", 0, MORE, null)
+                                .addField("articleLink", "zte", LESS, null)
                                 .build())
                         .build(),
                 getOrderFieldBuilder().addOrderField("articleDate", ASC)
-                        .addOrderField("articleName",DESC)
+                        .addOrderField("articleName", DESC)
                         .build());
         Assert.assertTrue(newsEntities.getContent().size() > 0);
+        Assert.assertEquals(Integer.valueOf(1), newsEntities.getContent().get(0).getNewsEntity().getId());
     }
 
     @Test
-    public void testSimplePaging(){
-        Page<NewsBodyEntity>res=searcher.getPage(0,10,NewsBodyEntity.class,getRequestBuilder().build(),null);
-        Assert.assertTrue(res.getContent().size()>0);
+    public void testSimplePaging() {
+        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, getRequestBuilder().build(), null);
+        Assert.assertTrue(res.getContent().size() > 0);
     }
+
 }

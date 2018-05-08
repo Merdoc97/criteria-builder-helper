@@ -1,24 +1,31 @@
 package com.github.builder;
 
 
-import com.github.builder.params.*;
+import com.github.builder.params.DateQuery;
+import com.github.builder.params.FieldsQuery;
+import com.github.builder.params.FieldsQueryWrap;
+import com.github.builder.params.OrderFields;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import javax.persistence.*;
 import javax.validation.Valid;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.github.builder.util.UtilClass.isNumber;
 
 /**
  * implementation description
@@ -116,7 +123,14 @@ public class CriteriaQuery implements CriteriaHelper {
                     if (isEntityField(forClass, fieldsQuery.getProperty())) {
                         throw new IllegalArgumentException("not allowed entities field for property query");
                     }
-                    criteria.add(forNonDates(fieldsQuery, forClass, null));
+
+                    List<Criterion> criterionList = new ArrayList<>();
+                    for (Object searchParam : fieldsQuery.getSearchCriteria()) {
+                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass, null));
+                    }
+                    Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
+                    criteria.add(Restrictions.or(req));
+
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
                     throw new IllegalArgumentException("wrong request search field not found");
                 }
@@ -155,8 +169,12 @@ public class CriteriaQuery implements CriteriaHelper {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
                     checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
-                    criteria.add(forNonDates(fieldsQuery, forClass, fields[0]));
-
+                    List<Criterion> criterionList = new ArrayList<>();
+                    for (Object searchParam : fieldsQuery.getSearchCriteria()) {
+                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass, fields[0]));
+                    }
+                    Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
+                    criteria.add(Restrictions.or(req));
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
                     log.info("wrong request for search field, field not found {}", fieldsQuery);
                     throw new IllegalArgumentException("wrong request search field not found");
@@ -200,7 +218,7 @@ public class CriteriaQuery implements CriteriaHelper {
         fieldsQuery.setProperty(withAliasParam);
     }
 
-    private Criterion forNonDates(@Valid FieldsQuery query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
+    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
         switch (query.getCriteriaCondition()) {
             case EQUAL:
                 return Restrictions.eq(query.getProperty(), query.getSearchCriteria());
@@ -232,6 +250,12 @@ public class CriteriaQuery implements CriteriaHelper {
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode()));
                 }
+                break;
+            case LESS:
+                return Restrictions.lt(query.getProperty(), query.getSearchCriteria());
+
+            case MORE:
+                return Restrictions.ge(query.getProperty(), query.getSearchCriteria());
         }
         throw new IllegalArgumentException("unknown condition for query");
     }
@@ -254,42 +278,6 @@ public class CriteriaQuery implements CriteriaHelper {
         }
     }
 
-    /**
-     * @param forClass
-     * @param property
-     * @param path     actual variable for entity relation
-     * @return
-     * @throws NoSuchFieldException
-     */
-    private boolean isNumber(Class forClass, String property, String path) throws NoSuchFieldException, ClassNotFoundException {
-        Field field = null;
-
-        if (Objects.nonNull(path) && path.length() > 0) {
-            if (forClass.getDeclaredField(path).getType().isAssignableFrom(List.class) || forClass.getDeclaredField(path).getType().isAssignableFrom(Set.class)) {
-                field = forClass.getClassLoader().
-                        loadClass(((ParameterizedTypeImpl) forClass
-                                .getDeclaredField(path)
-                                .getGenericType())
-                                .getActualTypeArguments()[0]
-                                .getTypeName())
-                        .getDeclaredField(property.split("\\.")[1]);
-            } else {
-                field = forClass.getDeclaredField(path)
-//                    get class type for entity
-                        .getType().getDeclaredField(property.split("\\.")[1]);
-            }
-        } else {
-            field = forClass.getDeclaredField(property);
-        }
-        Class<?> type = field.getType();
-        if (type.isAssignableFrom(Boolean.TYPE)) {
-            throw new IllegalArgumentException("not allowed boolean type for like field:" + property);
-        }
-        return type.isAssignableFrom(Integer.class)
-                || type.isAssignableFrom(Long.class)
-                || type.isAssignableFrom(Double.class)
-                || type.isAssignableFrom(Float.class);
-    }
 
     //    is like true build for lie else for not like
     private Criterion likeForInt(Field field, Object value, boolean isLike, MatchMode matchMode) throws NoSuchFieldException {
