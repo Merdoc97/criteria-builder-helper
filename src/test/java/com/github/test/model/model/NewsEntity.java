@@ -37,8 +37,8 @@ public class NewsEntity {
     @JoinColumn(name = "top_name_fk",referencedColumnName = "tpname_pk",insertable = false,updatable = false)
     private MenuEntity menuEntity;
 
-    @JsonIgnore
-    @OneToMany
-    @JoinColumn(name = "news_fk",referencedColumnName = "news_pk",insertable = false,updatable = false)
+    @OneToMany(mappedBy = "newsEntity")
     private List<NewsBodyEntity> bodyEntity;
+
+
 }

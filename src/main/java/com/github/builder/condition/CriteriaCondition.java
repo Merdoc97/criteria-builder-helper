@@ -6,5 +6,7 @@ public enum CriteriaCondition {
     LIKE,
     NOT_LIKE,
     EQUAL,
-    NOT_EQUAL
+    NOT_EQUAL,
+    MORE,
+    LESS
 }

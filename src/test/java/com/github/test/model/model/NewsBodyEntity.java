@@ -3,10 +3,7 @@ package com.github.test.model.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 /**
@@ -32,5 +29,9 @@ public class NewsBodyEntity {
 
     @Column(name = "news_fk")
     private Integer newsFk;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "news_fk",insertable = false,updatable = false)
+    private NewsEntity newsEntity;
 
 }
