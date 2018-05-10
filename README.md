@@ -144,3 +144,36 @@ it always use joinType JoinType.LEFT_OUTER_JOIN it means if you will create requ
 
 Current library always work by "and and" principle
 
+also current it can used from front end part to manipulate data
+# Example
+```json
+{
+ "request":{
+  "conditions": [
+    {
+      "criteriaCondition": "LIKE",
+      "matchMode": "EXACT",
+      "property": "string",
+      "searchCriteria": [
+      "any search param"
+      ]
+    }
+  ],
+  "dateConditions": [
+    {
+      "criteriaCondition": "MORE",
+      "property": "string",
+      "searchParam": "string",
+      "secondSearchParam":  "string"
+    }
+  ]
+ },
+ "orderFields":[
+  {
+  "orderField":"any present field",
+  ASC
+  }
+ ]
+}
+```
+
