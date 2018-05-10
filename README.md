@@ -176,4 +176,19 @@ also current library can be used from front end part to manipulate data
  ]
 }
 ```
+# How to use
+just declare beans
+
+```java
+    @Bean
+    public CriteriaHelper helper(EntityManager entityManager){
+        return new CriteriaQuery(entityManager);
+    }
+
+    @Bean
+    public EntitySearcher searcher(CriteriaHelper helper){
+        return new EntitySearcherImpl(helper);
+    }
+
+```
 
