@@ -171,7 +171,7 @@ also current it can used from front end part to manipulate data
  "orderFields":[
   {
   "orderField":"any present field",
-  ASC
+  "direction":"ASC"
   }
  ]
 }
