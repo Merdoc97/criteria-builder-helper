@@ -32,6 +32,7 @@
 		<compile-plugin-version>2.5.1</compile-plugin-version>
 		<lombok-version>1.16.20</lombok-version>
 		<javax-el-api.version>3.0.1-b08</javax-el-api.version>
+		<hibernate.version>5.2.16.Final</hibernate.version>
 	</properties>
 
 	<scm>
@@ -61,6 +62,11 @@
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-java8</artifactId>
+				<version>${hibernate.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-core</artifactId>
 				<version>${hibernate.version}</version>
 			</dependency>
 			<!--Imbeded postgres sql datasource start-->
@@ -108,11 +114,6 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
 			<scope>test</scope>
@@ -142,6 +143,17 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 

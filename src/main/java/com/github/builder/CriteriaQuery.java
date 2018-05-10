@@ -42,13 +42,16 @@ public class CriteriaQuery implements CriteriaHelper {
 
     @Override
     public final Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request) {
+
         if (Objects.isNull(request)) {
             log.warn("empty request {}", request);
             throw new IllegalArgumentException("request shouldn't be emty");
         }
         Session session = entityManager.unwrap(Session.class);
         session.setDefaultReadOnly(true);
+                
         Criteria criteria = session.createCriteria(forClass);
+
 //        request for fields not entities
         Set<FieldsQuery> queryForNotEntity = new HashSet<>();
         if (Objects.nonNull(request.getConditions())) {
