@@ -96,6 +96,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.el</artifactId>
 		</dependency>
@@ -186,10 +190,9 @@
 					<releaseProfiles>release</releaseProfiles>
 					<useReleaseProfile>false</useReleaseProfile>
 					<autoVersionSubmodules>false</autoVersionSubmodules>
-					<!--bitbucket not allowed push via ssh and not allowed via ssh be carefully-->
-					<pushChanges>false</pushChanges>
+					<pushChanges>true</pushChanges>
 
-					<branchName>release-${project.version}</branchName>
+					<branchName>${project.version}-RELEASE</branchName>
 				</configuration>
 			</plugin>
 		</plugins>
