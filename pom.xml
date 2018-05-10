@@ -39,7 +39,7 @@
 		<connection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</connection>
 		<developerConnection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</developerConnection>
 		<url>https://github.com/Merdoc97/criteria-builder-helper.git</url>
-		<tag>0.0.2-RELEASE</tag>
+		<tag>release</tag>
 	</scm>
 
 	<dependencyManagement>
