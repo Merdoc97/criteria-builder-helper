@@ -190,7 +190,7 @@
 					<releaseProfiles>release</releaseProfiles>
 					<useReleaseProfile>false</useReleaseProfile>
 					<autoVersionSubmodules>false</autoVersionSubmodules>
-					<pushChanges>true</pushChanges>
+					<pushChanges>false</pushChanges>
 
 					<branchName>${project.version}-RELEASE</branchName>
 				</configuration>
