@@ -42,9 +42,11 @@ public class UtilClass {
         if (type.isAssignableFrom(Boolean.TYPE)) {
             throw new IllegalArgumentException("not allowed boolean type for like field:" + property);
         }
-        return type.isAssignableFrom(Integer.class)
+        boolean result= type.isAssignableFrom(Integer.class)
                 || type.isAssignableFrom(Long.class)
                 || type.isAssignableFrom(Double.class)
                 || type.isAssignableFrom(Float.class);
+
+       return result;
     }
 }

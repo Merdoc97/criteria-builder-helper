@@ -29,9 +29,13 @@ public class EntitySearcherImpl implements EntitySearcher {
     @Override
     public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            return criteriaHelper.buildCriteria(forClass, request).list();
+            Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
+            criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+            return criteria.list();
         }
-        return criteriaHelper.buildCriteria(forClass, request, orderFields).list();
+        Criteria criteria = criteriaHelper.buildCriteria(forClass, request, orderFields);
+        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        return criteria.list();
     }
 
     @Override
@@ -66,6 +70,17 @@ public class EntitySearcherImpl implements EntitySearcher {
             throw new EntityNotFoundException("entity with request not found request : ".concat(request.toString()));
         }
 
+    }
+
+    @Override
+    public <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request) {
+        Criteria criteria = criteriaHelper.buildCriteria(fromClass, request);
+
+        criteria.setProjection(
+                Projections.projectionList()
+                        .add(Projections.distinct(Projections.property(entityField))));
+
+        return criteria.list();
     }
 
     private <T> Page<T> getPage(int pageNumber, int pageLength, Criteria criteria, Criteria withoutSorting) {

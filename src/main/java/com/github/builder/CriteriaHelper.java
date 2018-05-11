@@ -8,6 +8,7 @@ import java.util.Set;
 
 /**
  * helper to build dynamic query for ALL TO ALL SEARCH with n+1 strategy
+ * -- restrictions like doesn't work for numbers if you wan't use
  */
 public interface CriteriaHelper {
 

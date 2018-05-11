@@ -8,5 +8,6 @@ public enum CriteriaCondition {
     EQUAL,
     NOT_EQUAL,
     MORE,
-    LESS
+    LESS,
+    IN
 }

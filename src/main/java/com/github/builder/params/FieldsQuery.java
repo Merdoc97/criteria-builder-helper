@@ -10,6 +10,7 @@ import lombok.ToString;
 import org.hibernate.criterion.MatchMode;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class FieldsQuery implements Query{
 
     public FieldsQuery(String property, List<Object> searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
         this.property = property;
-        this.searchCriteria = searchCriteria;
+        this.searchCriteria = new ArrayList(searchCriteria);
         this.criteriaCondition = criteriaCondition;
         this.matchMode = matchMode;
     }

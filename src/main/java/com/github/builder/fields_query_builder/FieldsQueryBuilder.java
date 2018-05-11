@@ -30,6 +30,11 @@ public class FieldsQueryBuilder {
         }
 
         public Builder addField(String property, Object searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
+            if (searchCriteria instanceof List){
+                List<Object>list= (List<Object>) searchCriteria;
+                addField(property,list,criteriaCondition,matchMode);
+                return this;
+            }
             fieldsQueries.add(new FieldsQuery(property, Arrays.asList(searchCriteria), criteriaCondition, matchMode));
             return this;
         }
