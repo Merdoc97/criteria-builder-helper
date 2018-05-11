@@ -46,7 +46,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
         if (Objects.isNull(request)) {
             log.warn("empty request {}", request);
-            throw new IllegalArgumentException("request shouldn't be emty");
+            throw new IllegalArgumentException("request shouldn't be empty");
         }
         Session session = entityManager.unwrap(Session.class);
         session.setDefaultReadOnly(true);
@@ -65,7 +65,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                             return !isEntityField(forClass, fieldsQuery.getProperty());
                         } catch (NoSuchFieldException e) {
                             log.info("not correct field for request field not found {}", fieldsQuery.getProperty());
-                            throw new IllegalArgumentException("wrong request search field not found");
+                            throw new IllegalArgumentException("wrong request search field not found:"+fieldsQuery.getProperty());
                         }
                     }).collect(Collectors.toSet()));
         }
@@ -87,7 +87,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                             return !isEntityField(forClass, dateQuery.getProperty());
                         } catch (NoSuchFieldException e) {
                             log.info("not correct field for request field not found {}", dateQuery.getProperty());
-                            throw new IllegalArgumentException("wrong request search field not found");
+                            throw new IllegalArgumentException("wrong request search field not found:"+dateQuery.getProperty());
                         }
                     }).collect(Collectors.toSet()));
         }
@@ -128,7 +128,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             notDate.forEach(fieldsQuery -> {
                 try {
                     if (isEntityField(forClass, fieldsQuery.getProperty())) {
-                        throw new IllegalArgumentException("not allowed entities field for property query");
+                        throw new IllegalArgumentException("not allowed entities field for property query:"+fieldsQuery.getProperty());
                     }
 
                     List<Criterion> criterionList = new ArrayList<>();
@@ -139,7 +139,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     criteria.add(Restrictions.or(req));
 
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
-                    throw new IllegalArgumentException("wrong request search field not found");
+                    throw new IllegalArgumentException("wrong request search field not found: "+fieldsQuery.getProperty());
                 }
             });
     }
@@ -149,12 +149,12 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             dateQueries.forEach(dateQuery -> {
                 try {
                     if (isEntityField(forClass, dateQuery.getProperty())) {
-                        throw new IllegalArgumentException("not allowed entities field for property query");
+                        throw new IllegalArgumentException("not allowed entities field for property query: "+dateQuery.getProperty());
                     }
 
                     criteria.add(forDateCriterion(dateQuery));
                 } catch (NoSuchFieldException e) {
-                    throw new IllegalArgumentException("wrong request search field not found");
+                    throw new IllegalArgumentException("wrong request search field not found: "+dateQuery.getProperty());
                 }
 
             });
@@ -184,10 +184,10 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     criteria.add(Restrictions.or(req));
                 } catch (NoSuchFieldException | ClassNotFoundException e) {
                     log.info("wrong request for search field, field not found {}", fieldsQuery);
-                    throw new IllegalArgumentException("wrong request search field not found");
+                    throw new IllegalArgumentException("wrong request search field not found: "+fieldsQuery);
                 } catch (IndexOutOfBoundsException e) {
                     log.info("for entities query search params should be via point cut {}", fieldsQuery);
-                    throw new IllegalArgumentException("for entities query search params should be via point cut");
+                    throw new IllegalArgumentException("for entities query search params should be via point cut:"+fieldsQuery);
                 }
             });
         }
@@ -200,7 +200,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     criteria.add(forDateCriterion(fieldsQuery));
                 } catch (NoSuchFieldException e) {
                     log.info("wrong request search field not found :{}", fieldsQuery);
-                    throw new IllegalArgumentException("wrong request search field not found");
+                    throw new IllegalArgumentException("wrong request search field not found:"+fieldsQuery);
                 }
             });
         }
@@ -210,7 +210,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, com.github.builder.params.Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
         if (!isEntityField(forClass, fields[0])) {
             log.info("only entities field allowed for property query, param: {}", fieldsQuery.getProperty().split("\\.")[0]);
-            throw new IllegalArgumentException("only entities field allowed for property query");
+            throw new IllegalArgumentException("only entities field allowed for property query:"+fields[0]);
         }
 
         String alias = fields[0] + "_1";
