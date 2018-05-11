@@ -157,8 +157,7 @@ public class CriteriaTest extends TestConfig {
                 new FieldsQuery("id", ";UPDATE news SET article_topic='inject'; select 1", LIKE, MatchMode.END)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
-        List<NewsEntity> result = criteria.list();
-        ;
+        criteria.list();
     }
 
     @Test

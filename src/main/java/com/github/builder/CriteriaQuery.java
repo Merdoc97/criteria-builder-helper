@@ -5,6 +5,7 @@ import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.FieldsQueryWrap;
 import com.github.builder.params.OrderFields;
+import com.github.builder.util.FetchModeModifier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
@@ -36,7 +37,7 @@ import static com.github.builder.util.UtilClass.isNumber;
 @AllArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class CriteriaQuery implements CriteriaHelper {
+public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
     private final EntityManager entityManager;
 
@@ -51,6 +52,9 @@ public class CriteriaQuery implements CriteriaHelper {
         session.setDefaultReadOnly(true);
                 
         Criteria criteria = session.createCriteria(forClass);
+//        change fetchMode for all entities and inner entities
+        changeFetchMode(forClass,FetchMode.SELECT,criteria);
+
 
 //        request for fields not entities
         Set<FieldsQuery> queryForNotEntity = new HashSet<>();
@@ -289,23 +293,6 @@ public class CriteriaQuery implements CriteriaHelper {
 
     }
 
-    private boolean isEntityField(Class forClass, String property) throws NoSuchFieldException {
-        String[] fields = property.split("\\.");
-        if (fields.length == 2) {
-            Field field = forClass.getDeclaredField(fields[0]);
-            return field.isAnnotationPresent(OneToOne.class)
-                    || field.isAnnotationPresent(ManyToMany.class)
-                    || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);
-        } else {
-            Field field = forClass.getDeclaredField(property);
-            return field.isAnnotationPresent(OneToOne.class)
-                    || field.isAnnotationPresent(ManyToMany.class)
-                    || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);
-
-        }
-    }
 
 
     private String valueWithMatchMode(MatchMode matchMode, Object value) {

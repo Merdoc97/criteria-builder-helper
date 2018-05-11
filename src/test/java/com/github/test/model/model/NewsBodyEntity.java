@@ -30,7 +30,7 @@ public class NewsBodyEntity {
     @Column(name = "news_fk")
     private Integer newsFk;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "news_fk",insertable = false,updatable = false)
     private NewsEntity newsEntity;
 
