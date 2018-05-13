@@ -14,6 +14,7 @@ import com.github.test.model.model.NewsEntity;
 import com.github.test.model.model.NewsParseRule;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.exception.SQLGrammarException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class CriteriaTest extends TestConfig {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleName", ".post", LIKE, ANYWHERE),
-                new FieldsQuery("newsId", 1, CriteriaCondition.NOT_EQUAL, ANYWHERE),
+                new FieldsQuery("newsId", 1, CriteriaCondition.NOT_LIKE, ANYWHERE),
                 new FieldsQuery("newsId", 2, EQUAL, MatchMode.START))));
         Criteria criteria = helper.buildCriteria(NewsParseRule.class, request);
         List<NewsParseRule> result = criteria.list();
@@ -78,7 +79,7 @@ public class CriteriaTest extends TestConfig {
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
                 new FieldsQuery("isActive", true, EQUAL, null),
                 new FieldsQuery("isParsedToday", false, EQUAL, null),
-                new FieldsQuery("id", 1, EQUAL, ANYWHERE),
+                new FieldsQuery("id", 1, LIKE, ANYWHERE),
                 new FieldsQuery("menuEntity.menuName", "general", LIKE, ANYWHERE),
                 new FieldsQuery("menuEntity.id", 1, EQUAL, null)
         )));
@@ -150,7 +151,7 @@ public class CriteriaTest extends TestConfig {
         Assert.assertTrue(result.size() > 0);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SQLGrammarException.class)
     public void testInject() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(

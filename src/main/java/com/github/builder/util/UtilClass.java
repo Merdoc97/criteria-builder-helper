@@ -3,6 +3,7 @@ package com.github.builder.util;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -45,7 +46,9 @@ public class UtilClass {
         boolean result= type.isAssignableFrom(Integer.class)
                 || type.isAssignableFrom(Long.class)
                 || type.isAssignableFrom(Double.class)
-                || type.isAssignableFrom(Float.class);
+                || type.isAssignableFrom(Float.class)
+                || type.isAssignableFrom(BigDecimal.class)
+                || type.isAssignableFrom(Short.class);
 
        return result;
     }

@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Collections;
 import java.util.List;
 
-import static com.github.builder.condition.CriteriaCondition.*;
+import static com.github.builder.condition.CriteriaCondition.EQUAL;
+import static com.github.builder.condition.CriteriaCondition.LIKE;
 import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static com.github.builder.fields_query_builder.FieldsQueryBuilder.getFieldsBuilder;
 import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
@@ -78,13 +79,14 @@ public class EntitySearcherTest extends TestConfig {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
                 getRequestBuilder().addFields(
                         getFieldsBuilder()
-                                .addField("news.id", newsEntitiesId, IN, ANYWHERE)
+                                .addField("news.id", newsEntitiesId, LIKE, EXACT)
                                 .build())
                         .build(),
                 getOrderFieldBuilder()
                         .addOrderField("menuName", ASC)
                         .build());
         Assert.assertEquals(1,result.size());
+        Assert.assertEquals(Integer.valueOf(1),result.get(0).getId());
     }
 
 }

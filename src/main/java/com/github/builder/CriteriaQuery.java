@@ -12,6 +12,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
@@ -19,8 +20,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.validation.Valid;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -231,12 +234,12 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             case LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        throw new IllegalArgumentException("like/not like not allowed for Number values current value:" + query.getSearchCriteria());
+                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria());
                 } else if (Objects.nonNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        throw new IllegalArgumentException("like/not like not allowed for Number values current value:" + query.getSearchCriteria());
+                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
                 }
@@ -246,13 +249,13 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             case NOT_LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        throw new IllegalArgumentException("like/not like not allowed for Number values current value:" + query.getSearchCriteria());
+                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria()));
 
                 } else if (Objects.nonNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        throw new IllegalArgumentException("like/not like not allowed for Number values current value:" + query.getSearchCriteria());
+                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode()));
                 }
@@ -284,6 +287,36 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             default:
                 return Restrictions.ge(dateQuery.getProperty(), dateQuery.getSearchParam());
         }
+    }
+
+
+    //    is like true build for lie else for not like
+    private Criterion likeForInt(Class forClass,String property , Object value, boolean isLike, MatchMode matchMode) throws NoSuchFieldException, ClassNotFoundException {
+        String operand = isLike ? "" : " not";
+        if (isEntityField(forClass, property)) {
+            Class child=getChildClass(forClass, property.split("\\.")[0]);
+            Field field=child.getDeclaredField(property.split("\\.")[1]);
+            return Restrictions.sqlRestriction("cast(" + field.getDeclaredAnnotation(Column.class).name() + " as text)" + operand + " like " + valueWithMatchMode(matchMode, value));
+        }
+        Field field=forClass.getDeclaredField(property);
+        return Restrictions.sqlRestriction("cast(" + field.getDeclaredAnnotation(Column.class).name() + " as text)" + operand + " like " + valueWithMatchMode(matchMode, value));
+    }
+
+    private String valueWithMatchMode(MatchMode matchMode, Object value) {
+        if (Objects.isNull(matchMode)) {
+            return "'" + value + "'";
+        }
+        switch (matchMode) {
+            case ANYWHERE:
+                return "'%" + value + "%'";
+            case END:
+                return "'" + value + "%'";
+            case EXACT:
+                return "'" + value + "'";
+            default:
+                return "'%" + value + "'";
+        }
+
     }
 
     private String getAliasProperty(String searchParam) {
