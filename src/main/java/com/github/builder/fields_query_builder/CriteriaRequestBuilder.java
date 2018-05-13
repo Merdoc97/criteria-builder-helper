@@ -1,5 +1,6 @@
 package com.github.builder.fields_query_builder;
 
+
 import com.github.builder.CriteriaRequest;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
@@ -33,7 +34,7 @@ public class CriteriaRequestBuilder {
             return this;
         }
 
-        public Builder addFields(Set<FieldsQuery> fieldsQueries) {
+        public Builder addFieldQuery(Set<FieldsQuery> fieldsQueries) {
             conditions.addAll(fieldsQueries);
             return this;
         }

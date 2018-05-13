@@ -32,7 +32,7 @@ public class EntitySearcherTest extends TestConfig {
     public void testGetOnlyOneFields() {
         List<Integer> newsEntities = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
-                        .addFields(
+                        .addFieldQuery(
                                 getFieldsBuilder()
                                         .addField("articleTopic", "java", EQUAL, EXACT)
                                         .build())
@@ -48,7 +48,7 @@ public class EntitySearcherTest extends TestConfig {
     public void testGetOnlyOneFieldsSecond() {
         List<Integer> result = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
-                        .addFields(
+                        .addFieldQuery(
                                 getFieldsBuilder()
                                         .addField("bodyEntity.articleName", "java", LIKE, ANYWHERE)
                                         .build())
@@ -70,14 +70,14 @@ public class EntitySearcherTest extends TestConfig {
     public void testMultipleInclude() {
         List<Integer> newsEntitiesId = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
-                        .addFields(
+                        .addFieldQuery(
                                 getFieldsBuilder()
                                         .addField("bodyEntity.articleName", "java", LIKE, ANYWHERE)
                                         .build())
                         .build());
 
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
-                getRequestBuilder().addFields(
+                getRequestBuilder().addFieldQuery(
                         getFieldsBuilder()
                                 .addField("news.id", newsEntitiesId, LIKE, EXACT)
                                 .build())

@@ -1,10 +1,8 @@
 package com.github.builder;
 
 
-import com.github.builder.params.DateQuery;
-import com.github.builder.params.FieldsQuery;
-import com.github.builder.params.FieldsQueryWrap;
-import com.github.builder.params.OrderFields;
+import com.github.builder.exceptions.RequestFieldNotPresent;
+import com.github.builder.params.*;
 import com.github.builder.util.FetchModeModifier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,27 +16,34 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.validation.Valid;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.builder.util.UtilClass.isEntityField;
 import static com.github.builder.util.UtilClass.isNumber;
+
 
 /**
  * implementation description
  * for like allowed types - integer, string,
  * for boolean types allowed only equal param , true / false
  */
-@Validated
 @AllArgsConstructor
+@Validated
 @Slf4j
 @Transactional(readOnly = true)
 public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
+
 
     private final EntityManager entityManager;
 
@@ -61,14 +66,9 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
         Set<FieldsQuery> queryForNotEntity = new HashSet<>();
         if (Objects.nonNull(request.getConditions())) {
             queryForNotEntity.addAll(request.getConditions().stream()
-                    .filter(fieldsQuery -> {
-                        try {
-                            return !isEntityField(forClass, fieldsQuery.getProperty());
-                        } catch (NoSuchFieldException e) {
-                            log.info("not correct field for request field not found {}", fieldsQuery.getProperty());
-                            throw new IllegalArgumentException("wrong request search field not found:" + fieldsQuery.getProperty());
-                        }
-                    }).collect(Collectors.toSet()));
+                    .filter(fieldsQuery ->
+                            !isEntityField(forClass, fieldsQuery.getProperty()))
+                    .collect(Collectors.toSet()));
         }
 
 //        requests for entities
@@ -84,12 +84,9 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
         if (Objects.nonNull(request.getDateConditions())) {
             dateQueries.addAll(request.getDateConditions().stream()
                     .filter(dateQuery -> {
-                        try {
-                            return !isEntityField(forClass, dateQuery.getProperty());
-                        } catch (NoSuchFieldException e) {
-                            log.info("not correct field for request field not found {}", dateQuery.getProperty());
-                            throw new IllegalArgumentException("wrong request search field not found:" + dateQuery.getProperty());
-                        }
+
+                        return !isEntityField(forClass, dateQuery.getProperty());
+
                     }).collect(Collectors.toSet()));
         }
         Set<DateQuery> dateQueriesForEntities = new HashSet<>();
@@ -109,17 +106,14 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     public final Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
         Criteria criteria = buildCriteria(forClass, request);
         orderFields.forEach(orderField -> {
-            try {
-                if (isEntityField(forClass, orderField.getOrderField())) {
-                    String alias = getAliasProperty(orderField.getOrderField());
-                    addOrder(criteria, orderField.getDirection(), alias);
-                } else {
-                    addOrder(criteria, orderField.getDirection(), orderField.getOrderField());
-                }
-            } catch (NoSuchFieldException e) {
-                log.info("only entities field allowed for property query, param: {}", orderField.getOrderField().split("\\.")[0]);
-                throw new IllegalArgumentException("only entities field allowed for property query");
+
+            if (isEntityField(forClass, orderField.getOrderField())) {
+                String alias = getAliasProperty(orderField.getOrderField());
+                addOrder(criteria, orderField.getDirection(), alias);
+            } else {
+                addOrder(criteria, orderField.getDirection(), orderField.getOrderField());
             }
+
         });
         return criteria;
     }
@@ -148,16 +142,10 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     private void buildForDate(Criteria criteria, Set<DateQuery> dateQueries, Class forClass) {
         if (Objects.nonNull(dateQueries) && !dateQueries.isEmpty())
             dateQueries.forEach(dateQuery -> {
-                try {
-                    if (isEntityField(forClass, dateQuery.getProperty())) {
-                        throw new IllegalArgumentException("not allowed entities field for property query: " + dateQuery.getProperty());
-                    }
-
-                    criteria.add(forDateCriterion(dateQuery));
-                } catch (NoSuchFieldException e) {
-                    throw new IllegalArgumentException("wrong request search field not found: " + dateQuery.getProperty());
+                if (isEntityField(forClass, dateQuery.getProperty())) {
+                    throw new IllegalArgumentException("not allowed entities field for property query: " + dateQuery.getProperty());
                 }
-
+                criteria.add(forDateCriterion(dateQuery, forClass));
             });
 
     }
@@ -189,7 +177,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     throw new IllegalArgumentException("wrong request search field not found: " + fieldsQuery);
                 } catch (IndexOutOfBoundsException e) {
                     log.warn("for entities query search params should be via point cut {}", fieldsQuery);
-                    throw new IllegalArgumentException("for entities query search params should be via point cut:" + fieldsQuery);
+                    throw new IllegalArgumentException("for entities query search params must be via point cut:" + fieldsQuery);
                 }
             });
         }
@@ -199,7 +187,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
                     checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
-                    criteria.add(forDateCriterion(fieldsQuery));
+                    criteria.add(forDateCriterion(fieldsQuery, forClass));
                 } catch (NoSuchFieldException e) {
                     log.info("wrong request search field not found :{}", fieldsQuery);
                     throw new IllegalArgumentException("wrong request search field not found:" + fieldsQuery);
@@ -209,7 +197,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
     }
 
-    private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, com.github.builder.params.Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
+    private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
         if (!isEntityField(forClass, fields[0])) {
             log.info("only entities field allowed for property query, param: {}", fieldsQuery.getProperty().split("\\.")[0]);
             throw new IllegalArgumentException("only entities field allowed for property query:" + fields[0]);
@@ -234,12 +222,12 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             case LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
+                        return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria());
                 } else if (Objects.nonNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
+                        return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
                 }
@@ -249,13 +237,13 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             case NOT_LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
+                        return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria()));
 
                 } else if (Objects.nonNull(query.getMatchMode())) {
                     if (isNumber(forClass, query.getProperty(), path)) {
-                        return likeForInt(forClass,query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
+                        return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode()));
                 }
@@ -266,39 +254,78 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
             case MORE:
                 return Restrictions.ge(query.getProperty(), query.getSearchCriteria());
             case IN:
-                return Restrictions.in(query.getProperty(),query.getSearchCriteria());
+                return Restrictions.in(query.getProperty(), Arrays.asList(query.getSearchCriteria()));
         }
         throw new IllegalArgumentException("unknown condition for query");
     }
 
-    private Criterion forDateCriterion(@Valid DateQuery dateQuery) {
+    private Criterion forDateCriterion(@Valid DateQuery dateQuery, Class forClass) {
         switch (dateQuery.getCriteriaCondition()) {
             case BETWEEN:
                 if (Objects.isNull(dateQuery.getSecondSearchParam())) {
                     log.info("for condition BETWEEN second search param mustn't be null first param: {}, ", dateQuery.getProperty());
                     throw new IllegalArgumentException("for condition BETWEEN second search param mustn't be null");
                 }
-                return Restrictions.between(dateQuery.getProperty(), dateQuery.getSearchParam(), dateQuery.getSecondSearchParam());
+
+                return Restrictions.between(dateQuery.getProperty(), getSameDateType(forClass, dateQuery), getSameDateTypeSecondParam(forClass, dateQuery));
             case LESS:
-                return Restrictions.lt(dateQuery.getProperty(), dateQuery.getSearchParam());
+                return Restrictions.lt(dateQuery.getProperty(), getSameDateType(forClass, dateQuery));
             case EQUAL:
-                return Restrictions.eq(dateQuery.getProperty(), dateQuery.getSearchParam());
+                return Restrictions.eq(dateQuery.getProperty(), getSameDateType(forClass, dateQuery));
 //            default more
             default:
-                return Restrictions.ge(dateQuery.getProperty(), dateQuery.getSearchParam());
+                return Restrictions.ge(dateQuery.getProperty(), getSameDateType(forClass, dateQuery));
+
         }
     }
 
+    private Object getSameDateType(Class forClass, DateQuery dateQuery) {
+
+        Field field = getField(forClass, dateQuery.getProperty());
+        if (field.getType().isAssignableFrom(ZonedDateTime.class))
+            return dateQuery.getSearchParam().atStartOfDay(ZoneId.of("UTC"));
+        if (field.getType().isAssignableFrom(LocalDateTime.class))
+            return dateQuery.getSearchParam().atStartOfDay();
+        else return dateQuery.getSearchParam();
+
+    }
+
+    private Object getSameDateTypeSecondParam(Class forClass, DateQuery dateQuery) {
+
+        Field field = getField(forClass, dateQuery.getProperty());
+        if (field.getType().isAssignableFrom(ZonedDateTime.class))
+            return dateQuery.getSecondSearchParam().atStartOfDay(ZoneId.of("UTC"));
+        if (field.getType().isAssignableFrom(LocalDateTime.class))
+            return dateQuery.getSecondSearchParam().atStartOfDay();
+        else return dateQuery.getSecondSearchParam();
+
+    }
+
+    private Field getField(Class forClass, String property) {
+        Field field = null;
+
+        if (isEntityField(forClass, property)) {
+            Class childClass = getChildClass(forClass, property.split("\\.")[0]);
+            field = ReflectionUtils.findField(childClass, property.split("\\.")[1]);
+        } else {
+            field = ReflectionUtils.findField(forClass, property);
+            if (Objects.isNull(property)) {
+                throw new RequestFieldNotPresent("searched field not found :" + property);
+            }
+        }
+
+        return field;
+    }
 
     //    is like true build for lie else for not like
-    private Criterion likeForInt(Class forClass,String property , Object value, boolean isLike, MatchMode matchMode) throws NoSuchFieldException, ClassNotFoundException {
+    private Criterion likeForInt(Class forClass, String property, Object value, boolean isLike, MatchMode matchMode) throws NoSuchFieldException, ClassNotFoundException {
         String operand = isLike ? "" : " not";
         if (isEntityField(forClass, property)) {
-            Class child=getChildClass(forClass, property.split("\\.")[0]);
-            Field field=child.getDeclaredField(property.split("\\.")[1]);
+            Class child = getChildClass(forClass, property.split("\\.")[0]);
+            Field field = child.getDeclaredField(property.split("\\.")[1]);
             return Restrictions.sqlRestriction("cast(" + field.getDeclaredAnnotation(Column.class).name() + " as text)" + operand + " like " + valueWithMatchMode(matchMode, value));
         }
-        Field field=forClass.getDeclaredField(property);
+        Field field = forClass.getDeclaredField(property);
         return Restrictions.sqlRestriction("cast(" + field.getDeclaredAnnotation(Column.class).name() + " as text)" + operand + " like " + valueWithMatchMode(matchMode, value));
     }
 

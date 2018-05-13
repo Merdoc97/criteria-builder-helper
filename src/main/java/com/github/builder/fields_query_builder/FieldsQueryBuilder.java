@@ -1,8 +1,9 @@
 package com.github.builder.fields_query_builder;
 
+
 import com.github.builder.condition.CriteriaCondition;
-import com.github.builder.params.FieldsQuery;
 import org.hibernate.criterion.MatchMode;
+import com.github.builder.params.FieldsQuery;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -1,7 +1,8 @@
 package com.github.builder;
 
-import com.github.builder.params.OrderFields;
+
 import org.hibernate.Criteria;
+import com.github.builder.params.OrderFields;
 
 import javax.validation.Valid;
 import java.util.Set;
@@ -26,5 +27,5 @@ public interface CriteriaHelper {
      * @param orderFields - sorting fields
      * @return - build criteria for search request
      */
-    Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields>orderFields);
+    Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
 }

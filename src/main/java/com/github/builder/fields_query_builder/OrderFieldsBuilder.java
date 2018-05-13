@@ -1,7 +1,8 @@
 package com.github.builder.fields_query_builder;
 
-import com.github.builder.params.OrderFields;
+
 import org.springframework.data.domain.Sort;
+import com.github.builder.params.OrderFields;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +15,7 @@ public class OrderFieldsBuilder {
 
     private static final OrderFieldsBuilder ORDER_FIELDS_BUILDER = new OrderFieldsBuilder();
 
-    public static OrderFieldsBuilder.Builder getOrderFieldBuilder() {
+    public static Builder getOrderFieldBuilder() {
         return ORDER_FIELDS_BUILDER.new Builder();
     }
 

@@ -1,6 +1,5 @@
 package com.github.builder;
 
-import com.github.builder.params.OrderFields;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
+import com.github.builder.params.OrderFields;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -24,7 +24,6 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class EntitySearcherImpl implements EntitySearcher {
     private final CriteriaHelper criteriaHelper;
-
 
     @Override
     public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {

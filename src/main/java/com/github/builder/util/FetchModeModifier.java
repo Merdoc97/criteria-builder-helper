@@ -1,16 +1,16 @@
 package com.github.builder.util;
 
+import com.github.builder.exceptions.RequestFieldNotPresent;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import java.lang.reflect.Field;
 import java.util.Arrays;
+
+import static com.github.builder.util.UtilClass.isEntityField;
+import static com.github.builder.util.UtilClass.isOneToManyEntity;
 
 /**
  * current class changed dynamically fetch mode for entities
@@ -36,64 +36,35 @@ public abstract class FetchModeModifier {
 
     protected void changeChildFetchMode(Class entityClass, String property, FetchMode fetchMode, Criteria criteria) throws NoSuchFieldException, ClassNotFoundException {
 
-
-            Class childClass = getChildClass(entityClass,property);
-            Arrays.stream(childClass.getDeclaredFields())
-                    .forEach(field -> {
-                        try {
-                            if (isEntityField(childClass, field.getName())) {
-                                criteria.setFetchMode(property.concat(".").concat(field.getName()), fetchMode);
-                            }
-                        } catch (NoSuchFieldException e) {
-                            log.warn("field not present in entity: {}", childClass.getSimpleName());
-                            throw new IllegalArgumentException("field not present in entity:".concat(childClass.getSimpleName()));
-                        }
-                    });
+        Class childClass = getChildClass(entityClass, property);
+        Arrays.stream(childClass.getDeclaredFields())
+                .forEach(field -> {
+                    if (isEntityField(childClass, field.getName())) {
+                        criteria.setFetchMode(property.concat(".").concat(field.getName()), fetchMode);
+                    }
+                });
 
     }
 
-    protected Class getChildClass(Class forClass,String property) throws NoSuchFieldException, ClassNotFoundException {
-        if (isOneToManyEntity(forClass, property)) {
-            String className = (((ParameterizedTypeImpl) forClass
-                    .getDeclaredField(property)
-                    .getGenericType())
-                    .getActualTypeArguments()[0]
-                    .getTypeName());
-            return this.getClass().getClassLoader().loadClass(className);
-        }
-        else {
-            String className=forClass.getDeclaredField(property)
-                    .getType().getTypeName();
-            return this.getClass().getClassLoader().loadClass(className);
+    protected Class getChildClass(Class forClass, String property) {
+
+        try {
+            if (isOneToManyEntity(forClass, property)) {
+                String className = (((ParameterizedTypeImpl) forClass
+                        .getDeclaredField(property)
+                        .getGenericType())
+                        .getActualTypeArguments()[0]
+                        .getTypeName());
+
+                return this.getClass().getClassLoader().loadClass(className);
+            } else {
+
+                String className = ReflectionUtils.findField(forClass, property).getType().getTypeName();
+                return this.getClass().getClassLoader().loadClass(className);
+            }
+        } catch (ClassNotFoundException | NoSuchFieldException e) {
+            throw new RequestFieldNotPresent("field not found :" + property);
         }
     }
 
-    protected boolean isEntityField(Class forClass, String property) throws NoSuchFieldException {
-        String[] fields = property.split("\\.");
-        if (fields.length == 2) {
-            Field field = forClass.getDeclaredField(fields[0]);
-            return field.isAnnotationPresent(OneToOne.class)
-                    || field.isAnnotationPresent(ManyToMany.class)
-                    || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);
-        } else {
-            Field field = forClass.getDeclaredField(property);
-            return field.isAnnotationPresent(OneToOne.class)
-                    || field.isAnnotationPresent(ManyToMany.class)
-                    || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);
-
-        }
-    }
-
-    protected boolean isOneToManyEntity(Class forClass, String property) throws NoSuchFieldException {
-        String[] fields = property.split("\\.");
-        if (fields.length == 2) {
-            Field field = forClass.getDeclaredField(fields[0]);
-            return field.isAnnotationPresent(OneToMany.class);
-        } else {
-            Field field = forClass.getDeclaredField(property);
-            return field.isAnnotationPresent(OneToMany.class);
-        }
-    }
 }

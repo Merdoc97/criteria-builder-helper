@@ -1,12 +1,13 @@
 package com.github.builder.params;
 
-import com.github.builder.condition.CriteriaCondition;
+
 import com.github.builder.params.annotations.NotDateField;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.criterion.MatchMode;
+import com.github.builder.condition.CriteriaCondition;
 
 import javax.validation.constraints.NotNull;
 

@@ -1,5 +1,6 @@
 package com.github.builder.fields_query_builder;
 
+
 import com.github.builder.condition.CriteriaDateCondition;
 import com.github.builder.params.DateQuery;
 
@@ -27,7 +28,7 @@ public class DatesQueryBuilder {
             this.dateQueries = new HashSet<>();
         }
 
-        public Builder addFields(String property, LocalDate searchParam, LocalDate secondSearchParam, CriteriaDateCondition criteriaCondition) {
+        public Builder addField(String property, LocalDate searchParam, LocalDate secondSearchParam, CriteriaDateCondition criteriaCondition) {
             dateQueries.add(new DateQuery(property, searchParam, secondSearchParam, criteriaCondition));
             return this;
         }

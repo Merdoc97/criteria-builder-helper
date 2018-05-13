@@ -329,7 +329,7 @@ public class CriteriaTest extends TestConfig {
     public void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
-                getRequestBuilder().addFields(
+                getRequestBuilder().addFieldQuery(
                         getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
                                 .addField("newsEntity.isActive", true, EQUAL, null)

@@ -2,11 +2,11 @@ package com.github.builder;
 
 
 import com.github.builder.params.DateQuery;
-import com.github.builder.params.FieldsQuery;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import com.github.builder.params.FieldsQuery;
 
 import javax.validation.Valid;
 import java.util.HashSet;

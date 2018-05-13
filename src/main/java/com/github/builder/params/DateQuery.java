@@ -1,12 +1,12 @@
 package com.github.builder.params;
 
 
-import com.github.builder.condition.CriteriaDateCondition;
-import com.github.builder.params.annotations.DateField;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import com.github.builder.condition.CriteriaDateCondition;
+import com.github.builder.params.annotations.DateField;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
