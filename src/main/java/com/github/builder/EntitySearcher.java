@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  */
@@ -17,6 +16,14 @@ public interface EntitySearcher {
 
     <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields);
 
+    /**
+     *
+     * @param fromClass - root class
+     * @param entityField field which will be result of criteria
+     * @param request
+     * @param <T>
+     * @return
+     */
     <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request);
 
 
