@@ -4,10 +4,14 @@ import com.github.builder.EntitySearcher;
 import com.github.test.model.config.TestConfig;
 import com.github.test.model.model.MenuEntity;
 import com.github.test.model.model.NewsEntity;
+import com.github.test.model.model.NewsRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,10 +27,17 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 /**
 
  */
+@Slf4j
 public class EntitySearcherTest extends TestConfig {
 
     @Autowired
     private EntitySearcher searcher;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Autowired
+    private NewsRepository newsRepository;
 
     @Test
     public void testGetOnlyOneFields() {
@@ -63,7 +74,6 @@ public class EntitySearcherTest extends TestConfig {
     /**
      * test param
      * need implement search more than one requirement for building reach search
-     *
      */
 
     @Test
@@ -85,8 +95,33 @@ public class EntitySearcherTest extends TestConfig {
                 getOrderFieldBuilder()
                         .addOrderField("menuName", ASC)
                         .build());
-        Assert.assertEquals(1,result.size());
-        Assert.assertEquals(Integer.valueOf(1),result.get(0).getId());
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(Integer.valueOf(1), result.get(0).getId());
+    }
+
+    @Test
+    public void cascadeExample() {
+        NewsEntity newsEntity = new NewsEntity("topic", true, false);
+        MenuEntity menuEntity=new MenuEntity("parent");
+        newsEntity.setMenuEntity(menuEntity);
+//        cascade persist
+        log.info("-----------------------start cascade persist--------------------------------");
+        NewsEntity saved=newsRepository.save(newsEntity);
+//        cascade update
+        saved.setArticleTopic("updated");
+        log.info("-----------------------start cascade update--------------------------------");
+        NewsEntity updated=newsRepository.save(saved);
+        Assert.assertEquals(updated.getArticleTopic(),"updated");
+        Assert.assertEquals(updated.getMenuEntity().getMenuName(),"parent");
+        updated.getMenuEntity().setMenuName("newUpdated");
+        log.info("-----------------------start cascade update 2--------------------------------");
+        NewsEntity entity=newsRepository.save(updated);
+        Assert.assertEquals(entity.getMenuEntity().getMenuName(),"newUpdated");
+        Assert.assertEquals(entity.getArticleTopic(),"updated");
+//        cascade delete
+        log.info("-----------------------start cascade delete--------------------------------");
+        newsRepository.delete(entity);
+
     }
 
 }

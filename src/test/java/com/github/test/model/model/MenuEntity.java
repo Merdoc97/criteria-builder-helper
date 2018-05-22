@@ -29,7 +29,10 @@ public class MenuEntity {
     @OneToMany(mappedBy = "menuEntity")
     private List<NewsEntity>news;
 
+    public MenuEntity(String menuName) {
+        this.menuName = menuName;
+    }
 
-
-
+    public MenuEntity() {
+    }
 }

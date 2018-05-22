@@ -1,7 +1,7 @@
 package com.github.test.model.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 import java.util.List;
@@ -11,6 +11,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "news")
+@DynamicUpdate
 @Data
 public class NewsEntity {
     @Id
@@ -29,16 +30,19 @@ public class NewsEntity {
     @Column(name = "is_parsed_today")
     private Boolean isParsedToday;
 
-    @Column(name = "top_name_fk")
-    private Integer topFk;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "top_name_fk",referencedColumnName = "tpname_pk",insertable = false,updatable = false)
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "top_name_fk",referencedColumnName = "tpname_pk",updatable = false)
     private MenuEntity menuEntity;
 
     @OneToMany(mappedBy = "newsEntity")
     private List<NewsBodyEntity> bodyEntity;
 
+    public NewsEntity(String articleTopic, Boolean isActive, Boolean isParsedToday) {
+        this.articleTopic = articleTopic;
+        this.isActive = isActive;
+        this.isParsedToday = isParsedToday;
+    }
 
+    public NewsEntity() {
+    }
 }
