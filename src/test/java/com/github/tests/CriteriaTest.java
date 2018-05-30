@@ -351,4 +351,8 @@ public class CriteriaTest extends TestConfig {
         Assert.assertTrue(res.getContent().size() > 0);
     }
 
+    @Test
+    public void testForEntities(){
+
+    }
 }
