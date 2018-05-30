@@ -1,5 +1,8 @@
-package com.github.builder;
+package com.github.builder.hibernate;
 
+import com.github.builder.CriteriaHelper;
+import com.github.builder.CriteriaRequest;
+import com.github.builder.EntitySearcher;
 import com.github.builder.params.OrderFields;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,7 @@ public class EntitySearcherImpl implements EntitySearcher {
         }
         Criteria criteria = criteriaHelper.buildCriteria(forClass, request, orderFields);
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
         return criteria.list();
     }
 

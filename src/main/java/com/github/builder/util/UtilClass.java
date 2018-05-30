@@ -1,7 +1,8 @@
 package com.github.builder.util;
 
-import org.springframework.util.ReflectionUtils;
 import com.github.builder.exceptions.RequestFieldNotPresent;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import javax.persistence.ManyToMany;
@@ -47,7 +48,7 @@ public class UtilClass {
                         .getType().getDeclaredField(property.split("\\.")[1]);
             }
         } else {
-            field = ReflectionUtils.findField(forClass, property);
+            field = UtilClass.findField(forClass, property);
         }
         Class<?> type = field.getType();
         if (type.isAssignableFrom(Boolean.TYPE)) {
@@ -66,16 +67,19 @@ public class UtilClass {
     public static boolean isEntityField(Class forClass, String property) {
 
         String[] fields = property.split("\\.");
-        if (fields.length == 2) {
 
-            Field field = ReflectionUtils.findField(forClass, fields[0]);
+        if (fields.length > 1) {
+            return true;
+            /*
+            Field field = UtilClass.findField(forClass, property);
+
             if (Objects.isNull(field)) {
                 throw new RequestFieldNotPresent("field property not found : " + property);
             }
             return field.isAnnotationPresent(OneToOne.class)
                     || field.isAnnotationPresent(ManyToMany.class)
                     || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);
+                    || field.isAnnotationPresent(ManyToOne.class);*/
         } else {
             Field field = ReflectionUtils.findField(forClass, property);
             if (Objects.isNull(field)) {
@@ -87,6 +91,7 @@ public class UtilClass {
                     || field.isAnnotationPresent(ManyToOne.class);
 
         }
+
     }
 
 
@@ -99,6 +104,42 @@ public class UtilClass {
         } else {
             Field field = ReflectionUtils.findField(forClass, property);
             return field.isAnnotationPresent(OneToMany.class);
+        }
+    }
+
+    public static Field findField(Class forClass, String field) {
+        Assert.notNull(forClass, "class can't be null");
+        Assert.notNull(field, "search field can't be null");
+        String[] tmp = field.split("\\.");
+        Class tmpClass = forClass;
+        Field result = null;
+        for (String property : tmp) {
+            Field tmpField = ReflectionUtils.findField(tmpClass, property);
+            if (Objects.nonNull(tmpField)) {
+                if (isCollection(tmpField))
+                    tmpClass = getClassFromCollection(tmpField);
+                else
+                    tmpClass = tmpField.getDeclaringClass();
+                result = tmpField;
+            }
+        }
+
+        return result;
+
+    }
+
+    private static boolean isCollection(Field field) {
+        return (field.getType().isAssignableFrom(List.class) || field.getType().isAssignableFrom(Set.class));
+    }
+
+    private static Class getClassFromCollection(Field field) {
+        try {
+            return ClassLoader.getSystemClassLoader()
+                    .loadClass(((ParameterizedTypeImpl) field
+                            .getGenericType())
+                            .getActualTypeArguments()[0].getTypeName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("class not found");
         }
     }
 }

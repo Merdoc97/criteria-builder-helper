@@ -1,22 +1,23 @@
 package com.github.tests;
 
 import com.github.builder.EntitySearcher;
+import com.github.builder.util.UtilClass;
 import com.github.test.model.config.TestConfig;
 import com.github.test.model.model.MenuEntity;
+import com.github.test.model.model.NewsBodyEntity;
 import com.github.test.model.model.NewsEntity;
 import com.github.test.model.model.NewsRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 
-import static com.github.builder.condition.CriteriaCondition.EQUAL;
-import static com.github.builder.condition.CriteriaCondition.LIKE;
+import static com.github.builder.condition.CriteriaCondition.*;
 import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static com.github.builder.fields_query_builder.FieldsQueryBuilder.getFieldsBuilder;
 import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
@@ -32,9 +33,6 @@ public class EntitySearcherTest extends TestConfig {
 
     @Autowired
     private EntitySearcher searcher;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     private NewsRepository newsRepository;
@@ -78,6 +76,7 @@ public class EntitySearcherTest extends TestConfig {
 
     @Test
     public void testMultipleInclude() {
+
         List<Integer> newsEntitiesId = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -100,24 +99,63 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
+    public void testNotNUll() throws ClassNotFoundException {
+        List<MenuEntity> result = searcher.getList(MenuEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        getFieldsBuilder()
+                                .addField("news.id", "", NOT_NULL,null)
+                                .addField("news.bodyEntity.articleName", "java", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(),
+                getOrderFieldBuilder()
+                        .addOrderField("menuName", ASC)
+                        .build());
+
+
+        Assert.assertTrue(result.size()>0);
+    }
+
+    @Test
+    public void testUtil() throws ClassNotFoundException {
+        Field field= UtilClass.findField(MenuEntity.class,"news.bodyEntity.articleName");
+        Assert.assertNotNull( field);
+        Assert.assertEquals(field.getDeclaringClass(), NewsBodyEntity.class);
+    }
+
+    @Test
+    public void testNUll() {
+        List<MenuEntity> result = searcher.getList(MenuEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        getFieldsBuilder()
+                                .addField("news.id", "", IS_NULL,null)
+                                .build())
+                        .build(),
+                getOrderFieldBuilder()
+                        .addOrderField("menuName", ASC)
+                        .build());
+        Assert.assertTrue( result.size()==0);
+
+    }
+
+    @Test
     public void cascadeExample() {
         NewsEntity newsEntity = new NewsEntity("topic", true, false);
-        MenuEntity menuEntity=new MenuEntity("parent");
+        MenuEntity menuEntity = new MenuEntity("parent");
         newsEntity.setMenuEntity(menuEntity);
 //        cascade persist
         log.info("-----------------------start cascade persist--------------------------------");
-        NewsEntity saved=newsRepository.save(newsEntity);
+        NewsEntity saved = newsRepository.save(newsEntity);
 //        cascade update
         saved.setArticleTopic("updated");
         log.info("-----------------------start cascade update--------------------------------");
-        NewsEntity updated=newsRepository.save(saved);
-        Assert.assertEquals(updated.getArticleTopic(),"updated");
-        Assert.assertEquals(updated.getMenuEntity().getMenuName(),"parent");
+        NewsEntity updated = newsRepository.save(saved);
+        Assert.assertEquals(updated.getArticleTopic(), "updated");
+        Assert.assertEquals(updated.getMenuEntity().getMenuName(), "parent");
         updated.getMenuEntity().setMenuName("newUpdated");
         log.info("-----------------------start cascade update 2--------------------------------");
-        NewsEntity entity=newsRepository.save(updated);
-        Assert.assertEquals(entity.getMenuEntity().getMenuName(),"newUpdated");
-        Assert.assertEquals(entity.getArticleTopic(),"updated");
+        NewsEntity entity = newsRepository.save(updated);
+        Assert.assertEquals(entity.getMenuEntity().getMenuName(), "newUpdated");
+        Assert.assertEquals(entity.getArticleTopic(), "updated");
 //        cascade delete
         log.info("-----------------------start cascade delete--------------------------------");
         newsRepository.delete(entity);

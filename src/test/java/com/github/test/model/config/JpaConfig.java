@@ -1,9 +1,9 @@
 package com.github.test.model.config;
 
 import com.github.builder.CriteriaHelper;
-import com.github.builder.CriteriaQuery;
+import com.github.builder.hibernate.CriteriaQuery;
 import com.github.builder.EntitySearcher;
-import com.github.builder.EntitySearcherImpl;
+import com.github.builder.hibernate.EntitySearcherImpl;
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;

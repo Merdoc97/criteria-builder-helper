@@ -9,5 +9,7 @@ public enum CriteriaCondition {
     NOT_EQUAL,
     MORE,
     LESS,
-    IN
+    IN,
+    NOT_NULL,
+    IS_NULL
 }

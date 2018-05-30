@@ -1,6 +1,8 @@
-package com.github.builder;
+package com.github.builder.hibernate;
 
 
+import com.github.builder.CriteriaHelper;
+import com.github.builder.CriteriaRequest;
 import com.github.builder.exceptions.RequestFieldNotPresent;
 import com.github.builder.params.*;
 import com.github.builder.util.FetchModeModifier;
@@ -56,8 +58,8 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
         }
         Session session = entityManager.unwrap(Session.class);
         session.setDefaultReadOnly(true);
-
         Criteria criteria = session.createCriteria(forClass);
+
 //        change fetchMode for all entities and inner entities
         changeFetchMode(forClass, FetchMode.SELECT, criteria);
 
@@ -74,8 +76,10 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 //        requests for entities
         Set<FieldsQuery> queryForEntities = new HashSet<>();
         if (Objects.nonNull(request.getConditions())) {
-            queryForEntities.addAll(request.getConditions());
-            queryForEntities.removeAll(queryForNotEntity);
+            queryForEntities.addAll(request.getConditions().stream()
+                    .filter(fieldsQuery ->
+                            isEntityField(forClass, fieldsQuery.getProperty()))
+                    .collect(Collectors.toSet()));
         }
 
 
@@ -83,11 +87,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 //        for date request not entities
         if (Objects.nonNull(request.getDateConditions())) {
             dateQueries.addAll(request.getDateConditions().stream()
-                    .filter(dateQuery -> {
-
-                        return !isEntityField(forClass, dateQuery.getProperty());
-
-                    }).collect(Collectors.toSet()));
+                    .filter(dateQuery -> !isEntityField(forClass, dateQuery.getProperty())).collect(Collectors.toSet()));
         }
         Set<DateQuery> dateQueriesForEntities = new HashSet<>();
         if (Objects.nonNull(request.getDateConditions())) {
@@ -160,6 +160,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     private void buildForEntities(Criteria criteria, Set<FieldsQuery> entityCriterias, Set<DateQuery> dateQueries, Class forClass) {
 //        build for not date
         Map<String, String> aliasMap = new HashMap<>();
+
         if (Objects.nonNull(entityCriterias)) {
             entityCriterias.forEach(fieldsQuery -> {
                 try {
@@ -197,11 +198,34 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
     }
 
+
+    private Map<String,String>buildAliases(String[]tmp){
+        Map<String, String> aliasMap = new TreeMap<>((o1, o2) -> o1.split("\\.").length-o2.split("\\.").length);
+        for (int i = 0; i < tmp.length; i++) {
+            if (i != 0) {
+                StringBuilder builder = new StringBuilder();
+                for (int s = 0; s < i+1; s++) {
+                    builder.append(tmp[s]);
+                    if (s != i) {
+                        builder.append(".");
+                    }
+                }
+                aliasMap.put( builder.toString(),tmp[i]);
+            } else {
+                aliasMap.put(tmp[i], tmp[i]);
+            }
+        }
+        return aliasMap;
+    }
+
     private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
+
         if (!isEntityField(forClass, fields[0])) {
             log.info("only entities field allowed for property query, param: {}", fieldsQuery.getProperty().split("\\.")[0]);
             throw new IllegalArgumentException("only entities field allowed for property query:" + fields[0]);
         }
+
+
 
         String alias = fields[0];
 //                            add alias to criteria
@@ -255,6 +279,10 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                 return Restrictions.ge(query.getProperty(), query.getSearchCriteria());
             case IN:
                 return Restrictions.in(query.getProperty(), Arrays.asList(query.getSearchCriteria()));
+            case IS_NULL:
+                return Restrictions.isNull(query.getProperty());
+            case NOT_NULL:
+                return Restrictions.isNotNull(query.getProperty());
         }
         throw new IllegalArgumentException("unknown condition for query");
     }

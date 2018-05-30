@@ -32,7 +32,7 @@
 		<compile-plugin-version>2.5.1</compile-plugin-version>
 		<lombok-version>1.16.20</lombok-version>
 		<javax-el-api.version>3.0.1-b08</javax-el-api.version>
-		<hibernate.version>5.2.16.Final</hibernate.version>
+		<hibernate.version>5.3.1.Final</hibernate.version>
 	</properties>
 
 	<scm>
@@ -48,6 +48,11 @@
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
 				<version>${lombok-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-envers</artifactId>
+				<version>${hibernate.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.zaxxer</groupId>
@@ -98,6 +103,10 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-envers</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish</groupId>
