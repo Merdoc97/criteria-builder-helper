@@ -115,6 +115,8 @@ public class EntitySearcherTest extends TestConfig {
         Assert.assertTrue(result.size()>0);
     }
 
+
+
     @Test
     public void testUtil() throws ClassNotFoundException {
         Field field= UtilClass.findField(MenuEntity.class,"news.bodyEntity.articleName");
@@ -137,29 +139,5 @@ public class EntitySearcherTest extends TestConfig {
 
     }
 
-    @Test
-    public void cascadeExample() {
-        NewsEntity newsEntity = new NewsEntity("topic", true, false);
-        MenuEntity menuEntity = new MenuEntity("parent");
-        newsEntity.setMenuEntity(menuEntity);
-//        cascade persist
-        log.info("-----------------------start cascade persist--------------------------------");
-        NewsEntity saved = newsRepository.save(newsEntity);
-//        cascade update
-        saved.setArticleTopic("updated");
-        log.info("-----------------------start cascade update--------------------------------");
-        NewsEntity updated = newsRepository.save(saved);
-        Assert.assertEquals(updated.getArticleTopic(), "updated");
-        Assert.assertEquals(updated.getMenuEntity().getMenuName(), "parent");
-        updated.getMenuEntity().setMenuName("newUpdated");
-        log.info("-----------------------start cascade update 2--------------------------------");
-        NewsEntity entity = newsRepository.save(updated);
-        Assert.assertEquals(entity.getMenuEntity().getMenuName(), "newUpdated");
-        Assert.assertEquals(entity.getArticleTopic(), "updated");
-//        cascade delete
-        log.info("-----------------------start cascade delete--------------------------------");
-        newsRepository.delete(entity);
-
-    }
 
 }

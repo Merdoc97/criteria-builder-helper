@@ -30,26 +30,10 @@ public class UtilClass {
      * @return
      * @throws NoSuchFieldException
      */
-    public static boolean isNumber(Class forClass, String property, String path) throws NoSuchFieldException, ClassNotFoundException {
-        Field field = null;
+    public static boolean isNumber(Class forClass, String property) throws NoSuchFieldException, ClassNotFoundException {
 
-        if (Objects.nonNull(path) && path.length() > 0) {
-            if (ReflectionUtils.findField(forClass, path).getType().isAssignableFrom(List.class) || forClass.getDeclaredField(path).getType().isAssignableFrom(Set.class)) {
-                field = forClass.getClassLoader().
-                        loadClass(((ParameterizedTypeImpl) forClass
-                                .getDeclaredField(path)
-                                .getGenericType())
-                                .getActualTypeArguments()[0]
-                                .getTypeName())
-                        .getDeclaredField(property.split("\\.")[1]);
-            } else {
-                field = ReflectionUtils.findField(forClass, path)
-//                    get class type for entity
-                        .getType().getDeclaredField(property.split("\\.")[1]);
-            }
-        } else {
-            field = UtilClass.findField(forClass, property);
-        }
+        Field field = UtilClass.findField(forClass, property);
+
         Class<?> type = field.getType();
         if (type.isAssignableFrom(Boolean.TYPE)) {
             throw new IllegalArgumentException("not allowed boolean type for like field:" + property);
@@ -70,18 +54,8 @@ public class UtilClass {
 
         if (fields.length > 1) {
             return true;
-            /*
-            Field field = UtilClass.findField(forClass, property);
-
-            if (Objects.isNull(field)) {
-                throw new RequestFieldNotPresent("field property not found : " + property);
-            }
-            return field.isAnnotationPresent(OneToOne.class)
-                    || field.isAnnotationPresent(ManyToMany.class)
-                    || field.isAnnotationPresent(OneToMany.class)
-                    || field.isAnnotationPresent(ManyToOne.class);*/
         } else {
-            Field field = ReflectionUtils.findField(forClass, property);
+            Field field = UtilClass.findField(forClass, property);
             if (Objects.isNull(field)) {
                 throw new RequestFieldNotPresent("field property not found : " + property);
             }

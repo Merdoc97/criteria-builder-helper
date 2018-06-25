@@ -128,7 +128,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
                     List<Criterion> criterionList = new ArrayList<>();
                     for (Object searchParam : fieldsQuery.getSearchCriteria()) {
-                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass, null));
+                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass));
                     }
                     Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
                     criteria.add(Restrictions.or(req));
@@ -169,7 +169,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     List<Criterion> criterionList = new ArrayList<>();
                     for (Object searchParam : fieldsQuery.getSearchCriteria()) {
                         FieldsQueryWrap wrap = new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode());
-                        criterionList.add(forNonDates(wrap, forClass, fields[0]));
+                        criterionList.add(forNonDates(wrap, forClass));
                     }
                     Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
                     criteria.add(Restrictions.or(req));
@@ -199,18 +199,18 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     }
 
 
-    private Map<String,String>buildAliases(String[]tmp){
-        Map<String, String> aliasMap = new TreeMap<>((o1, o2) -> o1.split("\\.").length-o2.split("\\.").length);
-        for (int i = 0; i < tmp.length-1; i++) {
+    private Map<String, String> buildAliases(String[] tmp) {
+        Map<String, String> aliasMap = new TreeMap<>((o1, o2) -> o1.split("\\.").length - o2.split("\\.").length);
+        for (int i = 0; i < tmp.length - 1; i++) {
             if (i != 0) {
                 StringBuilder builder = new StringBuilder();
-                for (int s = 0; s < i+1; s++) {
+                for (int s = 0; s < i + 1; s++) {
                     builder.append(tmp[s]);
                     if (s != i) {
                         builder.append(".");
                     }
                 }
-                aliasMap.put( builder.toString(),tmp[i]);
+                aliasMap.put(builder.toString(), tmp[i]);
             } else {
                 aliasMap.put(tmp[i], tmp[i]);
             }
@@ -219,38 +219,47 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     }
 
     private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, Query fieldsQuery, Criteria criteria, String[] fields) throws NoSuchFieldException {
+/*
 
         if (!isEntityField(forClass, fields[0])) {
             log.info("only entities field allowed for property query, param: {}", fieldsQuery.getProperty().split("\\.")[0]);
             throw new IllegalArgumentException("only entities field allowed for property query:" + fields[0]);
         }
+*/
+        Map<String, String> aliases = buildAliases(fields);
 
+        aliases.forEach((absoluteField, alias) -> {
+            if (Objects.isNull(aliasMap.get(alias))) {
+                aliasMap.put(alias, absoluteField);
+                criteria.createCriteria(absoluteField, alias, JoinType.LEFT_OUTER_JOIN);
+                criteria.setFetchMode(alias, FetchMode.SELECT);
+            }
+        });
 
-
-        String alias = fields[0];
+        String alias = fields[fields.length - 2];
 //                            add alias to criteria
-        if (Objects.isNull(aliasMap.get(fields[0]))) {
+      /*if (Objects.isNull(aliases.get(fields[fields.length-1]))) {
             aliasMap.put(fields[0], alias);
             criteria.createCriteria(fields[0], alias, JoinType.LEFT_OUTER_JOIN);
             criteria.setFetchMode(fields[0], FetchMode.SELECT);
-        }
-        String withAliasParam = alias.concat(".").concat(fields[1]);
+        }*/
+        String withAliasParam = alias.concat(".").concat(fields[fields.length - 1]);
 //                            change to alias
         fieldsQuery.setProperty(withAliasParam);
     }
 
-    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
+    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass) throws NoSuchFieldException, ClassNotFoundException {
         switch (query.getCriteriaCondition()) {
             case EQUAL:
                 return Restrictions.eq(query.getProperty(), query.getSearchCriteria());
             case LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
-                    if (isNumber(forClass, query.getProperty(), path)) {
+                    if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria());
                 } else if (Objects.nonNull(query.getMatchMode())) {
-                    if (isNumber(forClass, query.getProperty(), path)) {
+                    if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
@@ -260,13 +269,13 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                 return Restrictions.ne(query.getProperty(), query.getSearchCriteria());
             case NOT_LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
-                    if (isNumber(forClass, query.getProperty(), path)) {
+                    if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria()));
 
                 } else if (Objects.nonNull(query.getMatchMode())) {
-                    if (isNumber(forClass, query.getProperty(), path)) {
+                    if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode()));
