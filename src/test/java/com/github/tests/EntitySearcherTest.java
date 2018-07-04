@@ -103,7 +103,7 @@ public class EntitySearcherTest extends TestConfig {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
                 getRequestBuilder().addFieldQuery(
                         getFieldsBuilder()
-                                .addField("news.id", "", NOT_NULL,null)
+                                .addField("news.id", "", NOT_NULL, null)
                                 .addField("news.bodyEntity.articleName", "java", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
@@ -112,15 +112,14 @@ public class EntitySearcherTest extends TestConfig {
                         .build());
 
 
-        Assert.assertTrue(result.size()>0);
+        Assert.assertTrue(result.size() > 0);
     }
-
 
 
     @Test
     public void testUtil() throws ClassNotFoundException {
-        Field field= UtilClass.findField(MenuEntity.class,"news.bodyEntity.articleName");
-        Assert.assertNotNull( field);
+        Field field = UtilClass.findField(MenuEntity.class, "news.bodyEntity.articleName");
+        Assert.assertNotNull(field);
         Assert.assertEquals(field.getDeclaringClass(), NewsBodyEntity.class);
     }
 
@@ -129,13 +128,13 @@ public class EntitySearcherTest extends TestConfig {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
                 getRequestBuilder().addFieldQuery(
                         getFieldsBuilder()
-                                .addField("news.id", "", IS_NULL,null)
+                                .addField("news.id", "", IS_NULL, null)
                                 .build())
                         .build(),
                 getOrderFieldBuilder()
                         .addOrderField("menuName", ASC)
                         .build());
-        Assert.assertTrue( result.size()==0);
+        Assert.assertTrue(result.size() == 0);
 
     }
 

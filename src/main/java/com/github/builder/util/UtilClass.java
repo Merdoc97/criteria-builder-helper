@@ -1,6 +1,7 @@
 package com.github.builder.util;
 
 import com.github.builder.exceptions.RequestFieldNotPresent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 /**
  */
+@Slf4j
 public class UtilClass {
 
 
@@ -26,14 +28,13 @@ public class UtilClass {
     /**
      * @param forClass
      * @param property
-     * @param path     actual variable for entity relation
      * @return
      * @throws NoSuchFieldException
      */
-    public static boolean isNumber(Class forClass, String property) throws NoSuchFieldException, ClassNotFoundException {
+    public static boolean isNumber(Class forClass, String property)  {
 
         Field field = UtilClass.findField(forClass, property);
-
+        log.info("find field {} for property {} for class {}",field,property,forClass);
         Class<?> type = field.getType();
         if (type.isAssignableFrom(Boolean.TYPE)) {
             throw new IllegalArgumentException("not allowed boolean type for like field:" + property);
