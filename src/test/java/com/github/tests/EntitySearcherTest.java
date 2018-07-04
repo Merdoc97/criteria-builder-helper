@@ -14,16 +14,19 @@ import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.builder.condition.CriteriaCondition.*;
 import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 /**
 
@@ -98,6 +101,82 @@ public class EntitySearcherTest extends TestConfig {
         Assert.assertEquals(Integer.valueOf(1), result.get(0).getId());
     }
 
+
+    @Test
+    public void testGetFieldsWhichNeeded() {
+        List<Map> result = searcher.getFields(NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+//                                .addField("news.id", "", NOT_NULL, null)
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(), "articleLink", "articleName", "newsEntity.articleTopic");
+        Assert.assertTrue(result.size() > 0);
+        result.stream().forEach(res -> {
+            Map map = res;
+            Assert.assertNotNull(map.get("articleLink"));
+            Assert.assertNotNull(map.get("articleName"));
+            Assert.assertNotNull(map.get("newsEntity.articleTopic"));
+            Assert.assertEquals(3, map.size());
+        });
+    }
+
+    @Test
+    public void testGetPageMap() {
+        Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+//                                .addField("news.id", "", NOT_NULL, null)
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(),
+                OrderFieldsBuilder.getOrderFieldBuilder()
+                        .build(),
+                "articleLink", "articleName", "newsEntity.articleTopic");
+        Assert.assertTrue(result.getContent().size() > 0);
+        Assert.assertEquals("44 elements in query",5,result.getTotalPages());
+        Assert.assertEquals(44,result.getTotalElements());
+        Assert.assertTrue(result.isFirst());
+        Assert.assertFalse(result.isLast());
+
+        result.getContent().stream()
+                .forEach(map -> {
+                    Assert.assertNotNull(map.get("articleLink"));
+                    Assert.assertNotNull(map.get("articleName"));
+                    Assert.assertNotNull(map.get("newsEntity.articleTopic"));
+                    Assert.assertEquals(3, map.size());
+        });
+    }
+
+    @Test
+    public void testGetMapWithSorting(){
+        Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+//                                .addField("news.id", "", NOT_NULL, null)
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(),
+                OrderFieldsBuilder.getOrderFieldBuilder()
+                        .addOrderField("newsEntity.articleTopic",DESC)
+                        .addOrderField("articleName",ASC)
+                        .build(),
+                "articleLink", "articleName", "newsEntity.articleTopic");
+        Assert.assertTrue(result.getContent().size() > 0);
+        Assert.assertEquals("44 elements in query",5,result.getTotalPages());
+        Assert.assertEquals(44,result.getTotalElements());
+        Assert.assertTrue(result.isFirst());
+
+        Assert.assertFalse(result.isLast());
+
+        result.getContent().stream()
+                .forEach(map -> {
+                    Assert.assertNotNull(map.get("articleLink"));
+                    Assert.assertNotNull(map.get("articleName"));
+                    Assert.assertNotNull(map.get("newsEntity.articleTopic").equals("databases"));
+                    Assert.assertEquals(3, map.size());
+                });
+    }
     @Test
     public void testNotNUll() throws ClassNotFoundException {
         List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,

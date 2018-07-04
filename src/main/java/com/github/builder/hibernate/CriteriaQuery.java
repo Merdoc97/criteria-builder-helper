@@ -207,7 +207,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
     }
 
 
-    public Map<String, String> buildAliases(String[] tmp) {
+    private Map<String, String> buildAliases(String[] tmp) {
         Map<String, String> aliasMap = new TreeMap<>((o1, o2) -> o1.split("\\.").length - o2.split("\\.").length);
         for (int i = 0; i < tmp.length - 1; i++) {
             if (i != 0) {

@@ -135,7 +135,7 @@ public class JpaConfig {
     }
 
     @Bean
-    public EntitySearcher searcher(CriteriaHelper helper){
-        return new EntitySearcherImpl(helper);
+    public EntitySearcher searcher(EntityManager entityManager){
+        return new EntitySearcherImpl(entityManager);
     }
 }
