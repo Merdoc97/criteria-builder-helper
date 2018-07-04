@@ -26,8 +26,9 @@ public class MenuEntity {
     private String menuName;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @OneToMany(mappedBy = "menuEntity")
-    private List<NewsEntity>news;
+    @OneToMany
+    @JoinColumn(name = "top_name_fk",referencedColumnName = "tpname_pk",updatable = false)
+    private List<NewsEntity> news;
 
     public MenuEntity(String menuName) {
         this.menuName = menuName;

@@ -19,7 +19,7 @@ import javax.validation.Valid;
 import java.util.Set;
 
 /**
- * current implementation on jpa criteria builder
+ * current implementation on jpa criteria getRequestBuilder
  */
 @Slf4j
 @AllArgsConstructor

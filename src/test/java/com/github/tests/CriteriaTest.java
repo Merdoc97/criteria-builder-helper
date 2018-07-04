@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.github.builder.condition.CriteriaCondition.*;
-import static com.github.builder.fields_query_builder.OrderFieldsBuilder.builder;
+import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -102,7 +102,7 @@ public class CriteriaTest extends TestConfig {
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
         List<NewsEntity> result = criteria.list();
         Assert.assertEquals(1, result.size());
-        Assert.assertTrue(result.get(0).getBodyEntity().get(0).getArticleName().startsWith("DUMP-2016:"));
+        Assert.assertTrue(result.get(0).getBodyEntity().stream().findFirst().get().getArticleName().startsWith("DUMP-2016:"));
     }
 
     @Test
@@ -185,8 +185,8 @@ public class CriteriaTest extends TestConfig {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
             Assert.assertTrue(newsEntity.getArticleTopic().contains("java"));
             Assert.assertEquals(1, newsEntity.getBodyEntity().size());
-            Assert.assertTrue(newsEntity.getBodyEntity().get(0).getArticleName().contains("Solving Java Issues"));
-            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().get(0).getArticleDate());
+            Assert.assertTrue(newsEntity.getBodyEntity().stream().findFirst().get().getArticleName().contains("Solving Java Issues"));
+            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().stream().findFirst().get().getArticleDate());
         });
 
     }
@@ -252,8 +252,8 @@ public class CriteriaTest extends TestConfig {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
             Assert.assertTrue(newsEntity.getArticleTopic().contains("java"));
             Assert.assertEquals(1, newsEntity.getBodyEntity().size());
-            Assert.assertTrue(newsEntity.getBodyEntity().get(0).getArticleName().contains("Solving Java Issues"));
-            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().get(0).getArticleDate());
+            Assert.assertTrue(newsEntity.getBodyEntity().stream().findFirst().get().getArticleName().contains("Solving Java Issues"));
+            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().stream().findFirst().get().getArticleDate());
         });
     }
 
@@ -288,8 +288,8 @@ public class CriteriaTest extends TestConfig {
             Assert.assertEquals("General Topics", newsEntity.getMenuEntity().getMenuName());
             Assert.assertTrue(newsEntity.getArticleTopic().contains("java"));
             Assert.assertEquals(1, newsEntity.getBodyEntity().size());
-            Assert.assertTrue(newsEntity.getBodyEntity().get(0).getArticleName().contains("Solving Java Issues"));
-            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().get(0).getArticleDate());
+            Assert.assertTrue(newsEntity.getBodyEntity().stream().findFirst().get().getArticleName().contains("Solving Java Issues"));
+            Assert.assertEquals(LocalDate.parse("2017-03-17"), newsEntity.getBodyEntity().stream().findFirst().get().getArticleDate());
         });
     }
 
@@ -329,8 +329,8 @@ public class CriteriaTest extends TestConfig {
     public void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
-                CriteriaRequestBuilder.builder().addFieldQuery(
-                        FieldsQueryBuilder.builder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
+                CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
                                 .addField("newsEntity.isActive", true, EQUAL, null)
                                 .addField("newsEntity.id", 2, LESS, null)
@@ -338,7 +338,7 @@ public class CriteriaTest extends TestConfig {
                                 .addField("articleLink", "zte", LESS, null)
                                 .build())
                         .build(),
-                builder().addOrderField("articleDate", ASC)
+                getOrderFieldBuilder().addOrderField("articleDate", ASC)
                         .addOrderField("articleName", DESC)
                         .build());
         Assert.assertTrue(newsEntities.getContent().size() > 0);
@@ -347,7 +347,7 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void testSimplePaging() {
-        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, CriteriaRequestBuilder.builder().build(), null);
+        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, CriteriaRequestBuilder.getRequestBuilder().build(), null);
         Assert.assertTrue(res.getContent().size() > 0);
     }
 

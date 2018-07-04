@@ -20,7 +20,7 @@ public class FieldsQueryBuilder {
 
     private static final FieldsQueryBuilder QUERY = new FieldsQueryBuilder();
 
-    public static Builder builder() {
+    public static Builder getFieldsBuilder() {
         return QUERY.new Builder();
     }
 

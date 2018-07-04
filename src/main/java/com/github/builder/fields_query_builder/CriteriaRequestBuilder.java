@@ -13,7 +13,7 @@ import java.util.Set;
 public class CriteriaRequestBuilder {
     private static final CriteriaRequestBuilder BUILDER = new CriteriaRequestBuilder();
 
-    public static Builder builder() {
+    public static Builder getRequestBuilder() {
         return BUILDER.new Builder();
     }
 

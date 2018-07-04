@@ -15,7 +15,7 @@ public class OrderFieldsBuilder {
 
     private static final OrderFieldsBuilder ORDER_FIELDS_BUILDER = new OrderFieldsBuilder();
 
-    public static Builder builder() {
+    public static Builder getOrderFieldBuilder() {
         return ORDER_FIELDS_BUILDER.new Builder();
     }
 
