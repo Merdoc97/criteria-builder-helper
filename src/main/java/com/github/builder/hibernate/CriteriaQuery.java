@@ -176,7 +176,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                         if (Objects.isNull(path))
                         criterionList.add(forNonDates(wrap, forClass,wrap.getProperty()));
                         else
-//                            if path present always last value be field 
+//                            if path present always last value be field
                             criterionList.add(forNonDates(wrap, forClass,path.concat(".").concat(tmp[1])));
                     }
                     Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
