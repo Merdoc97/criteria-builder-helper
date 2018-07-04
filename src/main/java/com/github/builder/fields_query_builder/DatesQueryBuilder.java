@@ -14,7 +14,7 @@ import java.util.Set;
 public class DatesQueryBuilder {
     private static final DatesQueryBuilder QUERY = new DatesQueryBuilder();
 
-    public static Builder getDateBuilder() {
+    public static Builder builder() {
         return QUERY.new Builder();
     }
 

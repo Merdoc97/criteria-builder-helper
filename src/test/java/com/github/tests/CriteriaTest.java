@@ -5,6 +5,7 @@ import com.github.builder.CriteriaRequest;
 import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
+import com.github.builder.fields_query_builder.FieldsQueryBuilder;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.OrderFields;
@@ -28,9 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.github.builder.condition.CriteriaCondition.*;
-import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
-import static com.github.builder.fields_query_builder.FieldsQueryBuilder.getFieldsBuilder;
-import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
+import static com.github.builder.fields_query_builder.OrderFieldsBuilder.builder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -329,8 +328,8 @@ public class CriteriaTest extends TestConfig {
     public void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
-                getRequestBuilder().addFieldQuery(
-                        getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
+                builder().addFieldQuery(
+                        FieldsQueryBuilder.builder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
                                 .addField("newsEntity.isActive", true, EQUAL, null)
                                 .addField("newsEntity.id", 2, LESS, null)
@@ -338,7 +337,7 @@ public class CriteriaTest extends TestConfig {
                                 .addField("articleLink", "zte", LESS, null)
                                 .build())
                         .build(),
-                getOrderFieldBuilder().addOrderField("articleDate", ASC)
+                builder().addOrderField("articleDate", ASC)
                         .addOrderField("articleName", DESC)
                         .build());
         Assert.assertTrue(newsEntities.getContent().size() > 0);
@@ -347,7 +346,7 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void testSimplePaging() {
-        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, getRequestBuilder().build(), null);
+        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, builder().build(), null);
         Assert.assertTrue(res.getContent().size() > 0);
     }
 

@@ -1,6 +1,8 @@
 package com.github.tests;
 
 import com.github.builder.EntitySearcher;
+import com.github.builder.fields_query_builder.FieldsQueryBuilder;
+import com.github.builder.fields_query_builder.OrderFieldsBuilder;
 import com.github.builder.util.UtilClass;
 import com.github.test.model.config.TestConfig;
 import com.github.test.model.model.MenuEntity;
@@ -18,9 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.github.builder.condition.CriteriaCondition.*;
-import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
-import static com.github.builder.fields_query_builder.FieldsQueryBuilder.getFieldsBuilder;
-import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -40,9 +39,9 @@ public class EntitySearcherTest extends TestConfig {
     @Test
     public void testGetOnlyOneFields() {
         List<Integer> newsEntities = searcher.getForIn(NewsEntity.class, "id",
-                getRequestBuilder()
+                builder()
                         .addFieldQuery(
-                                getFieldsBuilder()
+                                FieldsQueryBuilder.builder()
                                         .addField("articleTopic", "java", EQUAL, EXACT)
                                         .build())
                         .build());
@@ -56,9 +55,9 @@ public class EntitySearcherTest extends TestConfig {
     @Test
     public void testGetOnlyOneFieldsSecond() {
         List<Integer> result = searcher.getForIn(NewsEntity.class, "id",
-                getRequestBuilder()
+                builder()
                         .addFieldQuery(
-                                getFieldsBuilder()
+                                FieldsQueryBuilder.builder()
                                         .addField("bodyEntity.articleName", "java", LIKE, ANYWHERE)
                                         .build())
                         .build());
@@ -78,20 +77,20 @@ public class EntitySearcherTest extends TestConfig {
     public void testMultipleInclude() {
 
         List<Integer> newsEntitiesId = searcher.getForIn(NewsEntity.class, "id",
-                getRequestBuilder()
+                builder()
                         .addFieldQuery(
-                                getFieldsBuilder()
+                                FieldsQueryBuilder.builder()
                                         .addField("bodyEntity.articleName", "java", LIKE, ANYWHERE)
                                         .build())
                         .build());
 
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
-                getRequestBuilder().addFieldQuery(
-                        getFieldsBuilder()
+                builder().addFieldQuery(
+                        FieldsQueryBuilder.builder()
                                 .addField("news.id", newsEntitiesId, LIKE, EXACT)
                                 .build())
                         .build(),
-                getOrderFieldBuilder()
+                OrderFieldsBuilder.builder()
                         .addOrderField("menuName", ASC)
                         .build());
         Assert.assertEquals(1, result.size());
@@ -101,13 +100,13 @@ public class EntitySearcherTest extends TestConfig {
     @Test
     public void testNotNUll() throws ClassNotFoundException {
         List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,
-                getRequestBuilder().addFieldQuery(
-                        getFieldsBuilder()
+                builder().addFieldQuery(
+                        FieldsQueryBuilder.builder()
 //                                .addField("news.id", "", NOT_NULL, null)
                                 .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
-                getOrderFieldBuilder()
+                OrderFieldsBuilder.builder()
                         .addOrderField("newsEntity.menuEntity.menuName", ASC)
                         .build());
 
@@ -126,12 +125,12 @@ public class EntitySearcherTest extends TestConfig {
     @Test
     public void testNUll() {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
-                getRequestBuilder().addFieldQuery(
-                        getFieldsBuilder()
+                builder().addFieldQuery(
+                        FieldsQueryBuilder.builder()
                                 .addField("news.id", "", IS_NULL, null)
                                 .build())
                         .build(),
-                getOrderFieldBuilder()
+                OrderFieldsBuilder.builder()
                         .addOrderField("menuName", ASC)
                         .build());
         Assert.assertTrue(result.size() == 0);
