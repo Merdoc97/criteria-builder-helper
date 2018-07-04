@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.github.builder.condition.CriteriaCondition.*;
+import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.builder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
 import static org.springframework.data.domain.Sort.Direction.ASC;

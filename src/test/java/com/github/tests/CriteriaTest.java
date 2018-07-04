@@ -5,6 +5,7 @@ import com.github.builder.CriteriaRequest;
 import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
+import com.github.builder.fields_query_builder.CriteriaRequestBuilder;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
@@ -328,7 +329,7 @@ public class CriteriaTest extends TestConfig {
     public void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
-                builder().addFieldQuery(
+                CriteriaRequestBuilder.builder().addFieldQuery(
                         FieldsQueryBuilder.builder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
                                 .addField("newsEntity.isActive", true, EQUAL, null)
@@ -346,7 +347,7 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void testSimplePaging() {
-        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, builder().build(), null);
+        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, CriteriaRequestBuilder.builder().build(), null);
         Assert.assertTrue(res.getContent().size() > 0);
     }
 
