@@ -104,11 +104,11 @@ public class EntitySearcherTest extends TestConfig {
                 getRequestBuilder().addFieldQuery(
                         getFieldsBuilder()
 //                                .addField("news.id", "", NOT_NULL, null)
-                                .addField("newsEntity.menuEntity.menuName", "java", LIKE, MatchMode.ANYWHERE)
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
                 getOrderFieldBuilder()
-                        .addOrderField("menuName", ASC)
+                        .addOrderField("newsEntity.menuEntity.menuName", ASC)
                         .build());
 
 
