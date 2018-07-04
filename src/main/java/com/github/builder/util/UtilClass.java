@@ -49,6 +49,7 @@ public class UtilClass {
         return result;
     }
 
+
     public static boolean isEntityField(Class forClass, String property) {
 
         String[] fields = property.split("\\.");
