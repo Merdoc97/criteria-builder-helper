@@ -254,14 +254,16 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                 return Restrictions.eq(query.getProperty(), query.getSearchCriteria());
             case LIKE:
                 if (Objects.isNull(query.getMatchMode())) {
-                    if (isNumber(forClass, query.getProperty())) {
+                    /*if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
-                    }
+                    }*/
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria());
                 } else if (Objects.nonNull(query.getMatchMode())) {
+/*
                     if (isNumber(forClass, query.getProperty())) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), true, query.getMatchMode());
                     }
+*/
                     return Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode());
                 }
                 break;

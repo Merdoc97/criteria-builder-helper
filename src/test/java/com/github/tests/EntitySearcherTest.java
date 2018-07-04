@@ -100,11 +100,11 @@ public class EntitySearcherTest extends TestConfig {
 
     @Test
     public void testNotNUll() throws ClassNotFoundException {
-        List<MenuEntity> result = searcher.getList(MenuEntity.class,
+        List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         getFieldsBuilder()
-                                .addField("news.id", "", NOT_NULL, null)
-                                .addField("news.bodyEntity.articleName", "java", LIKE, MatchMode.ANYWHERE)
+//                                .addField("news.id", "", NOT_NULL, null)
+                                .addField("newsEntity.menuEntity.menuName", "java", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
                 getOrderFieldBuilder()

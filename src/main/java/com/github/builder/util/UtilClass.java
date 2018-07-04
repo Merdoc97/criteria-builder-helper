@@ -59,7 +59,7 @@ public class UtilClass {
         } else {
             Field field = UtilClass.findField(forClass, property);
             if (Objects.isNull(field)) {
-                throw new RequestFieldNotPresent("field property not found : " + property);
+                throw new RequestFieldNotPresent("field property not found : " + property+" for class "+forClass.getSimpleName());
             }
             return field.isAnnotationPresent(OneToOne.class)
                     || field.isAnnotationPresent(ManyToMany.class)
