@@ -5,8 +5,8 @@ import com.github.builder.CriteriaRequest;
 import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
-import com.github.builder.fields_query_builder.CriteriaRequestBuilder;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
+import com.github.builder.jpa.PredicateBuilder;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.OrderFields;
@@ -14,6 +14,7 @@ import com.github.builder.test.model.config.TestConfig;
 import com.github.builder.test.model.model.NewsBodyEntity;
 import com.github.builder.test.model.model.NewsEntity;
 import com.github.builder.test.model.model.NewsParseRule;
+import com.github.builder.test.model.model.ParseRuleRepository;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.exception.SQLGrammarException;
@@ -22,6 +23,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -30,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.github.builder.condition.CriteriaCondition.*;
+import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
@@ -48,6 +51,9 @@ public class CriteriaTest extends TestConfig {
     @Autowired
     private EntitySearcher searcher;
 
+    @Autowired
+    private ParseRuleRepository ruleRepository;
+
     @Test
     public void simpleQueryForBuilder() {
 
@@ -60,6 +66,23 @@ public class CriteriaTest extends TestConfig {
         List<NewsParseRule> result = criteria.list();
         Assert.assertTrue(result.size() > 0);
     }
+
+    @Test
+    public void simpleQueryForBuilderWithSpecBuilder() {
+        PredicateBuilder builder = new PredicateBuilder();
+        Specifications specification=builder.builder(getRequestBuilder()
+                .addFieldQuery(FieldsQueryBuilder.getFieldsBuilder()
+                        .addField("articleName",".post",LIKE, ANYWHERE)
+                        .addField("articleName",".post",LIKE, ANYWHERE)
+                        .addField("newsId", 1, CriteriaCondition.NOT_LIKE, ANYWHERE)
+//                        .addField("newsId", 2, EQUAL, MatchMode.START)
+                        .build())
+                .build());
+
+        List<NewsParseRule> result = ruleRepository.findAll(specification);
+        Assert.assertTrue(result.size() > 0);
+    }
+
 
     @Test
     public void testLikeForDates() {
@@ -329,7 +352,7 @@ public class CriteriaTest extends TestConfig {
     public void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
-                CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
+                getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
                                 .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
                                 .addField("newsEntity.isActive", true, EQUAL, null)
@@ -347,7 +370,7 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void testSimplePaging() {
-        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, CriteriaRequestBuilder.getRequestBuilder().build(), null);
+        Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, getRequestBuilder().build(), null);
         Assert.assertTrue(res.getContent().size() > 0);
     }
 

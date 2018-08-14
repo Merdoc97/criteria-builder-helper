@@ -3,12 +3,9 @@ package com.github.tests;
 import com.github.builder.EntitySearcher;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
 import com.github.builder.fields_query_builder.OrderFieldsBuilder;
-import com.github.builder.jpa.SpecificationBuilder;
+import com.github.builder.jpa.PredicateBuilder;
 import com.github.builder.test.model.config.TestConfig;
-import com.github.builder.test.model.model.MenuEntity;
-import com.github.builder.test.model.model.NewsBodyEntity;
-import com.github.builder.test.model.model.NewsEntity;
-import com.github.builder.test.model.model.NewsRepository;
+import com.github.builder.test.model.model.*;
 import com.github.builder.util.UtilClass;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.MatchMode;
@@ -24,6 +21,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +44,11 @@ public class EntitySearcherTest extends TestConfig {
 
     @Autowired
     private NewsRepository newsRepository;
+    @Autowired
+    private NewsBodyRepository newsBodyRepository;
+
+    @Autowired
+    private MenuRepository menuRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -74,29 +77,37 @@ public class EntitySearcherTest extends TestConfig {
         CriteriaQuery<NewsEntity> query = builder.createQuery(NewsEntity.class);
         Root<NewsEntity> root = query.from(NewsEntity.class);
         query.distinct(true);
-
-        query.select(root).where(builder.and(builder.like(builder.lower(((Join)root.fetch("bodyEntity",JoinType.LEFT)).get("articleName")), "%java%")));
+        List<Predicate>predicates=new ArrayList<>();
+        predicates.add(builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%")));
+        predicates.add(builder.and(builder.like(builder.lower(root.get("articleTopic")), "%java%")));
+        Predicate[]predicates1=new Predicate[predicates.size()];
+        predicates1=predicates.toArray(predicates1);
+        query.select(root).where(predicates1);
 
         List<NewsEntity> result = entityManager.createQuery(query).getResultList();
 
         Assert.assertEquals(2, result.size());
-        Assert.assertEquals( 14,result.stream().findFirst().get().getBodyEntity().size());
+        Assert.assertEquals(14, result.stream().findFirst().get().getBodyEntity().size());
     }
 
     @Test
-    public void testWithSpecification(){
-        List<NewsEntity> result = newsRepository.findAll(Specifications.where((root, query, builder) -> {
+    public void testWithSpecification() {
+        Specifications specification = Specifications.where((root, query, builder) -> {
             query.distinct(true);
-            return builder.and(builder.like(builder.lower(((Join)root.fetch("bodyEntity",JoinType.LEFT)).get("articleName")), "%java%"));
-        }));
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%"));
+        });
+        specification.and((root, query, builder) -> {
+            return (builder.and(builder.like(builder.lower( root.get("articleTopic")), "%java%")));
+        });
+        List<NewsEntity> result = newsRepository.findAll(specification);
         Assert.assertEquals(2, result.size());
-        Assert.assertEquals( 14,result.stream().findFirst().get().getBodyEntity().size());
+        Assert.assertEquals(14, result.stream().findFirst().get().getBodyEntity().size());
     }
 
     @Test
-    public void testWithSpecificationBuilder(){
-        SpecificationBuilder builder=new SpecificationBuilder();
-        Specification specification=builder.builder(getRequestBuilder()
+    public void testWithSpecificationBuilder() {
+        PredicateBuilder builder = new PredicateBuilder();
+        Specification specification = builder.builder(getRequestBuilder()
                 .addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
                                 .addField("bodyEntity.articleName", "java", LIKE, ANYWHERE)
@@ -105,7 +116,7 @@ public class EntitySearcherTest extends TestConfig {
         List<NewsEntity> result = newsRepository.findAll(specification);
 
         Assert.assertEquals(2, result.size());
-        Assert.assertEquals( 14,result.stream().findFirst().get().getBodyEntity().size());
+        Assert.assertEquals(14, result.stream().findFirst().get().getBodyEntity().size());
     }
 
     @Test
@@ -247,6 +258,29 @@ public class EntitySearcherTest extends TestConfig {
         Assert.assertTrue(result.size() > 0);
     }
 
+    @Test
+    public void testNotNUllSpecification() {
+        Specification specification = Specifications.where((root, query, builder) -> {
+            query.distinct(true);
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity",JoinType.LEFT)).get("menuName")), "%general%"));
+        });
+        List<NewsEntity> result = newsBodyRepository.findAll(specification);
+        Assert.assertTrue(result.size() > 0);
+    }
+
+    @Test
+    public void testNotNUllWithSpecBuilder() {
+        PredicateBuilder builder = new PredicateBuilder();
+        Specification specification = builder.builder(getRequestBuilder().addFieldQuery(
+                FieldsQueryBuilder.getFieldsBuilder()
+//                                .addField("news.id", "", NOT_NULL, null)
+                        .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                        .build())
+                .build());
+        List<NewsBodyEntity> result = newsBodyRepository.findAll(specification);
+        Assert.assertTrue(result.size() > 0);
+    }
+
 
     @Test
     public void testUtil() throws ClassNotFoundException {
@@ -266,6 +300,19 @@ public class EntitySearcherTest extends TestConfig {
                 OrderFieldsBuilder.getOrderFieldBuilder()
                         .addOrderField("menuName", ASC)
                         .build());
+        Assert.assertTrue(result.size() == 0);
+
+    }
+
+    @Test
+    public void testNUllWithSpecBuilder() {
+        PredicateBuilder builder = new PredicateBuilder();
+        List<MenuEntity> result = menuRepository.findAll(builder.builder(
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+                                .addField("news.id", "", IS_NULL, null)
+                                .build())
+                        .build()));
         Assert.assertTrue(result.size() == 0);
 
     }
