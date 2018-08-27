@@ -6,7 +6,7 @@ import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
-import com.github.builder.jpa.PredicateBuilder;
+import com.github.builder.jpa.PredicateCreator;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.OrderFields;
@@ -23,9 +23,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -54,6 +58,9 @@ public class CriteriaTest extends TestConfig {
     @Autowired
     private ParseRuleRepository ruleRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Test
     public void simpleQueryForBuilder() {
 
@@ -69,17 +76,20 @@ public class CriteriaTest extends TestConfig {
 
     @Test
     public void simpleQueryForBuilderWithSpecBuilder() {
-        PredicateBuilder builder = new PredicateBuilder();
-        Specifications specification=builder.builder(getRequestBuilder()
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<NewsParseRule> query = builder.createQuery(NewsParseRule.class);
+        Root<NewsParseRule> root = query.from(NewsParseRule.class);
+        PredicateCreator predicateCreator = new PredicateCreator();
+        javax.persistence.criteria.Predicate[] specification= predicateCreator.createPredicates(getRequestBuilder()
                 .addFieldQuery(FieldsQueryBuilder.getFieldsBuilder()
                         .addField("articleName",".post",LIKE, ANYWHERE)
-                        .addField("articleName",".post",LIKE, ANYWHERE)
                         .addField("newsId", 1, CriteriaCondition.NOT_LIKE, ANYWHERE)
-//                        .addField("newsId", 2, EQUAL, MatchMode.START)
+                        .addField("newsId", 2, EQUAL, MatchMode.START)
                         .build())
-                .build());
+                .build(),builder,root,query);
 
-        List<NewsParseRule> result = ruleRepository.findAll(specification);
+        query.select(root).where(specification);
+        List<NewsParseRule> result = entityManager.createQuery(query).getResultList();
         Assert.assertTrue(result.size() > 0);
     }
 

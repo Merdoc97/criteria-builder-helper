@@ -4,6 +4,8 @@ import com.github.builder.CriteriaHelper;
 import com.github.builder.EntitySearcher;
 import com.github.builder.hibernate.CriteriaQuery;
 import com.github.builder.hibernate.EntitySearcherImpl;
+import com.github.builder.jpa.EntitySearcherJpaImpl;
+import com.github.builder.jpa.PredicateCreator;
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.JoinType;
 import javax.sql.DataSource;
 import java.io.IOException;
 
@@ -94,5 +97,10 @@ public class JpaConfig {
     @Bean
     public EntitySearcher searcher(EntityManager entityManager){
         return new EntitySearcherImpl(entityManager);
+    }
+
+    @Bean
+    public EntitySearcher jpaSearcher(EntityManager entityManager){
+        return new EntitySearcherJpaImpl(entityManager,new PredicateCreator(),JoinType.LEFT);
     }
 }

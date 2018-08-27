@@ -1,22 +1,19 @@
 package com.github.builder.jpa;
 
 import com.github.builder.CriteriaRequest;
-import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.FieldsQueryWrap;
 import org.hibernate.criterion.MatchMode;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.data.domain.Sort;
 
 import javax.persistence.criteria.*;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-public class PredicateBuilder {
+public class PredicateCreator {
 
 
-    public Predicate[] builder(@Valid CriteriaRequest request,CriteriaBuilder criteriaBuilder,Root root,CriteriaQuery query) {
+    public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query) {
 
         List<Predicate>predicates=new ArrayList<>();
 
@@ -24,7 +21,7 @@ public class PredicateBuilder {
         request.getConditions().stream()
                 .forEach(conditions -> {
                     conditions.getSearchCriteria().forEach(o -> {
-                        criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))));
+                        predicates.add(criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))));
                     });
                 });
         Predicate[]res=new Predicate[predicates.size()];
@@ -51,12 +48,13 @@ public class PredicateBuilder {
             case NOT_NULL:
                 return builder.and(builder.isNotNull(getFetch(root, fieldsQuery.getProperty())));
             case NOT_EQUAL:
+
                 return builder.and(builder.notEqual(getFetch(root, fieldsQuery.getProperty()), fieldsQuery.getSearchCriteria()));
         }
         throw new IllegalArgumentException("unknown condition for query");
     }
 
-    private Path getFetch(Root root, String property) {
+    Path getFetch(Root root, String property) {
         String[] tmp = property.split("\\.");
 //        bug but for mvp it's ok
         if (tmp.length > 2) {
@@ -69,6 +67,23 @@ public class PredicateBuilder {
         }
         if (tmp.length>1)
         return ((Path) root.fetch(tmp[0], JoinType.LEFT)).get(tmp[1]);
+
+        return root.get(tmp[0]);
+
+    }
+
+    Path getPath(Root root, String property) {
+        String[] tmp = property.split("\\.");
+//        bug but for mvp it's ok
+        if (tmp.length > 2) {
+            Path path = root.get(tmp[0]);
+            for (int i = 1; i < tmp.length - 1; i++) {
+                path = path.get(tmp[i]);
+            }
+            return ((Path) path).get(tmp[tmp.length - 1]);
+        }
+        if (tmp.length>1)
+            return ((Path) root.fetch(tmp[0], JoinType.LEFT)).get(tmp[1]);
 
         return root.get(tmp[0]);
 
@@ -89,6 +104,16 @@ public class PredicateBuilder {
                 return "%" + value + "";
         }
 
+    }
+
+    public Order addOrder(CriteriaBuilder builder,Root root, Sort.Direction direction, String property) {
+        switch (direction) {
+            case ASC:
+                return builder.asc(getFetch(root, property));
+            default:
+                return builder.desc(getFetch(root, property));
+
+        }
     }
 
 }
