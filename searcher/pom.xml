@@ -13,8 +13,6 @@
         <version>0.0.26-SNAPSHOT</version>
     </parent>
 
-
-
     <build>
         <plugins>
             <plugin>
