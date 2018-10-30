@@ -18,7 +18,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</connection>
-        <tag>release</tag>
+
     </scm>
 
     <modules>
