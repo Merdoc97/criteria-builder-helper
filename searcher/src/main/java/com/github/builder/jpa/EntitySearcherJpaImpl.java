@@ -1,6 +1,5 @@
 package com.github.builder.jpa;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.builder.CriteriaRequest;
 import com.github.builder.EntitySearcher;
 import com.github.builder.params.OrderFields;
@@ -31,7 +30,6 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     private final EntityManager entityManager;
     private final PredicateCreator predicateCreator;
     private final JoinType joinType;
-    private final ObjectMapper mapper=new ObjectMapper();
 
     @Override
     public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {

@@ -307,18 +307,6 @@ public class EntitySearcherTest extends TestConfig {
         Assert.assertTrue(result.size() > 0);
     }
 
-    /*@Test
-    public void testNotNUllWithSpecBuilder() {
-        PredicateCreator createPredicates = new PredicateCreator();
-        Specification specification = createPredicates.createPredicates(getRequestBuilder().addFieldQuery(
-                FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
-                        .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
-                        .build())
-                .build());
-        List<NewsBodyEntity> result = newsBodyRepository.findAll(specification);
-        Assert.assertTrue(result.size() > 0);
-    }*/
 
 
     @Test
