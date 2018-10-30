@@ -21,6 +21,7 @@
         <connection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</connection>
         <developerConnection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</developerConnection>
         <url>https://github.com/Merdoc97/criteria-builder-helper.git</url>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
