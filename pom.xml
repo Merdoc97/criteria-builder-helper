@@ -29,8 +29,8 @@
 
             <id>release</id>
             <name>criteria builder github</name>
-            <url>scp://repo/maven2</url>
-            <layout>${scm.url}</layout>
+            <url>${scm.url}</url>
+            <layout>default</layout>
         </repository>
     </distributionManagement>
 
