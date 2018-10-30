@@ -42,7 +42,7 @@
                     <tagNameFormat>v@{project.version}-release</tagNameFormat>
                     <releaseProfiles>release</releaseProfiles>
                     <useReleaseProfile>false</useReleaseProfile>
-                    <autoVersionSubmodules>false</autoVersionSubmodules>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                     <pushChanges>false</pushChanges>
                     <branchName>${project.version}-RELEASE</branchName>
                 </configuration>
