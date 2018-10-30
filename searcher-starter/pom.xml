@@ -4,12 +4,12 @@
 
 
     <artifactId>searcher-auto-configuration</artifactId>
-    <version>0.0.36-RELEASE</version>
+    <version>0.0.37-SNAPSHOT</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>com.github</groupId>
         <artifactId>criteriasearchhelper</artifactId>
-        <version>0.0.36-RELEASE</version>
+        <version>0.0.37-SNAPSHOT</version>
     </parent>
 
     <dependencies>
