@@ -41,6 +41,8 @@
                 <configuration>
                     <tagNameFormat>v@{project.version}-release</tagNameFormat>
                     <releaseProfiles>release</releaseProfiles>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <pushChanges>false</pushChanges>
                     <branchName>${project.version}-RELEASE</branchName>
                 </configuration>
             </plugin>
