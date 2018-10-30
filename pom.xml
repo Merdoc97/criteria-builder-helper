@@ -24,6 +24,16 @@
         <tag>HEAD</tag>
     </scm>
 
+    <distributionManagement>
+        <repository>
+
+            <id>release</id>
+            <name>criteria builder github</name>
+            <url>scp://repo/maven2</url>
+            <layout>${scm.url}</layout>
+        </repository>
+    </distributionManagement>
+
     <modules>
         <module>searcher</module>
         <module>searcher-starter</module>
