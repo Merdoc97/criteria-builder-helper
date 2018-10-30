@@ -17,7 +17,7 @@
     </parent>
 
     <scm>
-        <connection>scm:git:https://github.com/Merdoc97/criteria-builder-helper.git</connection>
+        <connection>scm:git:git@github.com/Merdoc97/criteria-builder-helper.git</connection>
 
       <tag>HEAD</tag>
   </scm>
