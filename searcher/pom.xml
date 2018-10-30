@@ -4,13 +4,13 @@
 
 
     <artifactId>searcher-core</artifactId>
-    <version>0.0.24-SNAPSHOT</version>
+    <version>0.0.26-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>searcher-core</name>
     <parent>
         <groupId>com.github</groupId>
         <artifactId>criteriasearchhelper</artifactId>
-        <version>0.0.24-SNAPSHOT</version>
+        <version>0.0.26-SNAPSHOT</version>
     </parent>
 
     <build>
@@ -42,6 +42,7 @@
                     <releaseProfiles>release</releaseProfiles>
                     <useReleaseProfile>false</useReleaseProfile>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseVersion>${project.version}-RELEASE</releaseVersion>
                     <pushChanges>false</pushChanges>
                     <branchName>${project.version}-RELEASE</branchName>
                 </configuration>
