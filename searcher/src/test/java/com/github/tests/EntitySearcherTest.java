@@ -72,7 +72,6 @@ public class EntitySearcherTest extends TestConfig {
     }
 
 
-
     @Test
     public void testWithSpecification() {
         Specifications specification = Specifications.where((root, query, builder) -> {
@@ -80,7 +79,7 @@ public class EntitySearcherTest extends TestConfig {
             return builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%"));
         });
         specification.and((root, query, builder) -> {
-            return (builder.and(builder.like(builder.lower( root.get("articleTopic")), "%java%")));
+            return (builder.and(builder.like(builder.lower(root.get("articleTopic")), "%java%")));
         });
         List<NewsEntity> result = newsRepository.findAll(specification);
         Assert.assertEquals(2, result.size());
@@ -153,7 +152,6 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    @Ignore
     public void testGetFieldsWhichNeededJpa() {
         List<Map> result = jpaSearcher.getFields(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
@@ -199,7 +197,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void getJpaPage(){
+    public void getJpaPage() {
         Page<NewsBodyEntity> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -207,9 +205,9 @@ public class EntitySearcherTest extends TestConfig {
                                 .build())
                         .build(),
                 OrderFieldsBuilder.getOrderFieldBuilder()
-                        .addOrderField("newsEntity.menuEntity.menuName",ASC)
-                        .addOrderField("articleLink",ASC)
-                        .addOrderField("newsEntity.articleTopic",DESC)
+                        .addOrderField("newsEntity.menuEntity.menuName", ASC)
+                        .addOrderField("articleLink", ASC)
+                        .addOrderField("newsEntity.articleTopic", DESC)
                         .build());
         Assert.assertTrue(result.getContent().size() > 0);
         Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
@@ -301,12 +299,11 @@ public class EntitySearcherTest extends TestConfig {
     public void testNotNUllSpecification() {
         Specification specification = Specifications.where((root, query, builder) -> {
             query.distinct(true);
-            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity",JoinType.LEFT)).get("menuName")), "%general%"));
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity", JoinType.LEFT)).get("menuName")), "%general%"));
         });
         List<NewsEntity> result = newsBodyRepository.findAll(specification);
         Assert.assertTrue(result.size() > 0);
     }
-
 
 
     @Test

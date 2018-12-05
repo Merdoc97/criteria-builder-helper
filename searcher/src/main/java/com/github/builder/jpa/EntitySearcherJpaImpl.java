@@ -77,7 +77,10 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     @Override
     public <T> List<Map> getFields(Class<T> forClass, CriteriaRequest request, String... entityFields) {
 
-        throw new UnsupportedOperationException("jpa not support return map result use hibernate implementation instead of jpa implementation");
+
+        TypedQuery query=entityManager.createQuery(createQuery(forClass, request));
+
+        return null;
 
     }
 
@@ -98,6 +101,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
         Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
         query.where(predicates);
+
 
         return query;
     }
