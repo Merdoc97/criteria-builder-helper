@@ -4,7 +4,7 @@
 
     <groupId>com.github</groupId>
     <artifactId>criteriasearchhelper</artifactId>
-    <version>0.0.41-SNAPSHOT</version>
+    <version>0.0.41-RELEASE</version>
     <packaging>pom</packaging>
     <name>criteriasearchhelper</name>
     <description>Criteria builder helper for dynamic sql queries</description>
