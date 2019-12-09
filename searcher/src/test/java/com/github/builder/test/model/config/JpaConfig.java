@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.JoinType;
 import javax.sql.DataSource;
 import java.io.IOException;
 
@@ -90,17 +89,17 @@ public class JpaConfig {
     }
 
     @Bean
-    public CriteriaHelper helper(EntityManager entityManager){
+    public CriteriaHelper helper(EntityManager entityManager) {
         return new CriteriaQuery(entityManager);
     }
 
     @Bean
-    public EntitySearcher searcher(EntityManager entityManager){
+    public EntitySearcher searcher(EntityManager entityManager) {
         return new EntitySearcherImpl(entityManager);
     }
 
     @Bean
-    public EntitySearcher jpaSearcher(EntityManager entityManager){
-        return new EntitySearcherJpaImpl(entityManager,new PredicateCreator(),JoinType.LEFT);
+    public EntitySearcher jpaSearcher(EntityManager entityManager) {
+        return new EntitySearcherJpaImpl(entityManager, new PredicateCreator());
     }
 }

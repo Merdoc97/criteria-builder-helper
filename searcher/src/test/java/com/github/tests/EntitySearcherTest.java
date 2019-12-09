@@ -55,8 +55,9 @@ public class EntitySearcherTest extends TestConfig {
     @PersistenceContext
     private EntityManager entityManager;
 
+
     @Test
-    public void testGetOnlyOneFields() {
+    public void testGetOnlyOneFields() throws IllegalAccessException {
         List<Integer> newsEntities = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -71,6 +72,21 @@ public class EntitySearcherTest extends TestConfig {
 
     }
 
+    @Test
+    public void testGetOnlyOneFieldsJpaImplementation() throws IllegalAccessException {
+        List<Integer> newsEntities = jpaSearcher.getForIn(NewsEntity.class, "id",
+                getRequestBuilder()
+                        .addFieldQuery(
+                                FieldsQueryBuilder.getFieldsBuilder()
+                                        .addField("articleTopic", "java", EQUAL, EXACT)
+                                        .build())
+                        .build());
+
+        Assert.assertTrue("in  present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
+        Assert.assertEquals(new Integer(1), newsEntities.get(0));
+
+
+    }
 
     @Test
     public void testWithSpecification() {
@@ -152,6 +168,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
+    @Ignore
     public void testGetFieldsWhichNeededJpa() {
         List<Map> result = jpaSearcher.getFields(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(

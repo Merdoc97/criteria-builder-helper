@@ -1,8 +1,8 @@
 package com.github.builder;
 
 
-import org.hibernate.Criteria;
 import com.github.builder.params.OrderFields;
+import org.hibernate.Criteria;
 
 import javax.validation.Valid;
 import java.util.Set;
@@ -21,9 +21,8 @@ public interface CriteriaHelper {
     Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request);
 
     /**
-     *
-     * @param forClass - root entity class for request
-     * @param request - set of fields with predictable request which can include inner entity with point syntax
+     * @param forClass    - root entity class for request
+     * @param request     - set of fields with predictable request which can include inner entity with point syntax
      * @param orderFields - sorting fields
      * @return - build criteria for search request
      */

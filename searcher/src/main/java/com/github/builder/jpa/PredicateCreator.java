@@ -15,7 +15,7 @@ public class PredicateCreator {
 
     public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query) {
 
-        List<Predicate>predicates=new ArrayList<>();
+        List<Predicate> predicates = new ArrayList<>();
 
         query.distinct(true);
         request.getConditions().stream()
@@ -24,8 +24,9 @@ public class PredicateCreator {
                         predicates.add(criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))));
                     });
                 });
-        Predicate[]res=new Predicate[predicates.size()];
-        res=predicates.toArray(res);
+
+        Predicate[] res = new Predicate[predicates.size()];
+        res = predicates.toArray(res);
         return res;
     }
 
@@ -36,7 +37,7 @@ public class PredicateCreator {
             case EQUAL:
                 return builder.and(builder.equal(getFetch(root, fieldsQuery.getProperty()), fieldsQuery.getSearchCriteria()));
             case MORE:
-                return builder.and(builder.greaterThan(getFetch(root, fieldsQuery.getProperty()),  String.valueOf(fieldsQuery.getSearchCriteria())));
+                return builder.and(builder.greaterThan(getFetch(root, fieldsQuery.getProperty()), String.valueOf(fieldsQuery.getSearchCriteria())));
             case LESS:
                 return builder.and(builder.lessThan(getFetch(root, fieldsQuery.getProperty()), String.valueOf(fieldsQuery.getSearchCriteria())));
             case IN:
@@ -56,7 +57,7 @@ public class PredicateCreator {
 
     Path getFetch(Root root, String property) {
         String[] tmp = property.split("\\.");
-//        bug but for mvp it's ok
+
         if (tmp.length > 2) {
             Fetch path = root.fetch(tmp[0], JoinType.LEFT);
             for (int i = 1; i < tmp.length - 1; i++) {
@@ -65,24 +66,7 @@ public class PredicateCreator {
 
             return ((Path) path).get(tmp[tmp.length - 1]);
         }
-        if (tmp.length>1)
-        return ((Path) root.fetch(tmp[0], JoinType.LEFT)).get(tmp[1]);
-
-        return root.get(tmp[0]);
-
-    }
-
-    Path getPath(Root root, String property) {
-        String[] tmp = property.split("\\.");
-//        bug but for mvp it's ok
-        if (tmp.length > 2) {
-            Path path = root.get(tmp[0]);
-            for (int i = 1; i < tmp.length - 1; i++) {
-                path = path.get(tmp[i]);
-            }
-            return ((Path) path).get(tmp[tmp.length - 1]);
-        }
-        if (tmp.length>1)
+        if (tmp.length > 1)
             return ((Path) root.fetch(tmp[0], JoinType.LEFT)).get(tmp[1]);
 
         return root.get(tmp[0]);
@@ -106,7 +90,7 @@ public class PredicateCreator {
 
     }
 
-    public Order addOrder(CriteriaBuilder builder,Root root, Sort.Direction direction, String property) {
+    public Order addOrder(CriteriaBuilder builder, Root root, Sort.Direction direction, String property) {
         switch (direction) {
             case ASC:
                 return builder.asc(getFetch(root, property));

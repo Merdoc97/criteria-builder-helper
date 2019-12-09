@@ -2,24 +2,26 @@ package com.github.builder.jpa;
 
 import com.github.builder.CriteriaRequest;
 import com.github.builder.EntitySearcher;
+import com.github.builder.exceptions.NotImplementedException;
+import com.github.builder.exceptions.RequestFieldNotPresent;
 import com.github.builder.params.OrderFields;
+import com.github.builder.util.UtilClass;
 import com.github.builder.util.jpa.JpaFetchModeModifier;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.query.criteria.internal.compile.CriteriaQueryTypeQueryAdapter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,12 +31,11 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     private final EntityManager entityManager;
     private final PredicateCreator predicateCreator;
-    private final JoinType joinType;
 
     @Override
     public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            entityManager.createQuery(createQuery(forClass, request)).getResultList();
+            return entityManager.createQuery(createQuery(forClass, request)).getResultList();
         }
         return entityManager.createQuery(createQueryWithSorting(forClass, request, orderFields)).getResultList();
 
@@ -70,18 +71,31 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     }
 
     @Override
-    public <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request) {
-        throw new NotImplementedException();
+    public <T> List getForIn(Class<T> forClass, String entityField, CriteriaRequest request) {
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request));
+
+        ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
+                .setMaxResults(10000)
+                .setCacheable(false)
+                .scroll(ScrollMode.FORWARD_ONLY);
+
+        List<Object> objects = new ArrayList<>();
+        while (results.next()) {
+            Object row = results.get(0);
+            try {
+                objects.add(UtilClass.getFieldValue(forClass, entityField, row));
+            } catch (IllegalAccessException e) {
+                log.error("can't get field from entity please check is it field present");
+                throw new RequestFieldNotPresent("can't get field from entity please check is it field present", e.getCause());
+            }
+        }
+        results.close();
+        return objects;
     }
 
     @Override
     public <T> List<Map> getFields(Class<T> forClass, CriteriaRequest request, String... entityFields) {
-
-
-        TypedQuery query=entityManager.createQuery(createQuery(forClass, request));
-
-        return null;
-
+        throw new NotImplementedException();
     }
 
     @Override
@@ -95,10 +109,6 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         CriteriaQuery<T> query = builder.createQuery(forClass);
 
         Root<T> root = query.from(forClass);
-
-        //todo fix bug not working
-//        changeFetchMode(forClass,joinType,root);
-
         Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
         query.where(predicates);
 
@@ -110,10 +120,6 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(forClass);
         Root<T> root = query.from(forClass);
-
-        //todo fix bug not working
-//        changeFetchMode(forClass,joinType,root);
-
 
         Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
         query.where(predicates);
@@ -133,8 +139,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         Expression expression = builder.countDistinct(root);
         query.distinct(true);
         query.select(expression);
-        Long count = (Long) entityManager.createQuery(query).getSingleResult();
-        return count;
+        return (Long) entityManager.createQuery(query).getSingleResult();
     }
 
     private <T> Page<T> getPage(int pageNumber, int pageLength, TypedQuery criteria, Class forClass) {
