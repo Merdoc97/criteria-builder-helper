@@ -26,7 +26,7 @@ public interface EntitySearcher {
      * @param <T>
      * @return
      */
-    <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request);
+    <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request) ;
 
     /**
      *

@@ -6,17 +6,18 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static java.util.Objects.isNull;
+
 /**
+ *
  */
 @Slf4j
 public class UtilClass {
@@ -31,22 +32,23 @@ public class UtilClass {
      * @return
      * @throws NoSuchFieldException
      */
-    public static boolean isNumber(Class forClass, String property)  {
+    public static boolean isNumber(Class forClass, String property) {
 
         Field field = UtilClass.findField(forClass, property);
-        log.info("find field {} for property {} for class {}",field,property,forClass);
+        log.info("find field {} for property {} for class {}", field, property, forClass);
+        if (isNull(field)) {
+            throw new RequestFieldNotPresent("field not present");
+        }
         Class<?> type = field.getType();
         if (type.isAssignableFrom(Boolean.TYPE)) {
             throw new IllegalArgumentException("not allowed boolean type for like field:" + property);
         }
-        boolean result = type.isAssignableFrom(Integer.class)
+        return type.isAssignableFrom(Integer.class)
                 || type.isAssignableFrom(Long.class)
                 || type.isAssignableFrom(Double.class)
                 || type.isAssignableFrom(Float.class)
                 || type.isAssignableFrom(BigDecimal.class)
                 || type.isAssignableFrom(Short.class);
-
-        return result;
     }
 
 
@@ -58,8 +60,8 @@ public class UtilClass {
             return true;
         } else {
             Field field = UtilClass.findField(forClass, property);
-            if (Objects.isNull(field)) {
-                throw new RequestFieldNotPresent("field property not found : " + property+" for class "+forClass.getSimpleName());
+            if (isNull(field)) {
+                throw new RequestFieldNotPresent("field property not found : " + property + " for class " + forClass.getSimpleName());
             }
             return field.isAnnotationPresent(OneToOne.class)
                     || field.isAnnotationPresent(ManyToMany.class)
@@ -69,7 +71,6 @@ public class UtilClass {
         }
 
     }
-
 
     public static boolean isOneToManyEntity(Class forClass, String property) {
 
@@ -102,6 +103,24 @@ public class UtilClass {
 
         return result;
 
+    }
+
+    public static Object getFieldValue(Class forClass, String entityFieldName, Object entity) throws IllegalAccessException {
+        Field field = UtilClass.findField(forClass, entityFieldName);
+        if (isNull(field)) {
+            throw new IllegalAccessException("field not present");
+        }
+        field.setAccessible(true);
+        return field.get(entity);
+    }
+
+    public static String getIdField(Class forClass) {
+        Field[] fields = forClass.getDeclaredFields();
+        return Arrays.stream(fields)
+                .filter(field -> field.isAnnotationPresent(Id.class))
+                .findFirst()
+                .orElseThrow(() -> new RequestFieldNotPresent("id field not present"))
+                .getName();
     }
 
     private static boolean isCollection(Field field) {

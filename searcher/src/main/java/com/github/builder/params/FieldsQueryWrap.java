@@ -50,4 +50,5 @@ public class FieldsQueryWrap implements Query {
         this.criteriaCondition = criteriaCondition;
         this.matchMode = matchMode;
     }
+
 }

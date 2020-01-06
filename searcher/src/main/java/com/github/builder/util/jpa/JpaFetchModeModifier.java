@@ -20,7 +20,6 @@ public abstract class JpaFetchModeModifier extends FetchModeModifier {
                 .forEach(field -> {
                     try {
                         if (isEntityField(forClass, field.getName())) {
-//                            change all child entities to lazy instead of conflicts
                             changeChildFetchMode(forClass, field.getName(), fetchMode, criteria);
                         }
                     } catch (NoSuchFieldException | ClassNotFoundException e) {

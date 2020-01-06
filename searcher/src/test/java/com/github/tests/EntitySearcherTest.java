@@ -3,19 +3,24 @@ package com.github.tests;
 import com.github.builder.EntitySearcher;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
 import com.github.builder.fields_query_builder.OrderFieldsBuilder;
-import com.github.builder.util.UtilClass;
 import com.github.builder.test.model.config.TestConfig;
-import com.github.builder.test.model.model.MenuEntity;
-import com.github.builder.test.model.model.NewsBodyEntity;
-import com.github.builder.test.model.model.NewsEntity;
-import com.github.builder.test.model.model.NewsRepository;
+import com.github.builder.test.model.model.*;
+import com.github.builder.util.UtilClass;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
@@ -35,13 +40,24 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 public class EntitySearcherTest extends TestConfig {
 
     @Autowired
+    @Qualifier("searcher")
     private EntitySearcher searcher;
 
     @Autowired
+    @Qualifier("jpaSearcher")
+    private EntitySearcher jpaSearcher;
+
+    @Autowired
     private NewsRepository newsRepository;
+    @Autowired
+    private NewsBodyRepository newsBodyRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
 
     @Test
-    public void testGetOnlyOneFields() {
+    public void testGetOnlyOneFields() throws IllegalAccessException {
         List<Integer> newsEntities = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -50,10 +66,40 @@ public class EntitySearcherTest extends TestConfig {
                                         .build())
                         .build());
 
-        Assert.assertTrue("in com.github.config.test present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
+        Assert.assertTrue("in  present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
         Assert.assertEquals(new Integer(1), newsEntities.get(0));
 
 
+    }
+
+    @Test
+    public void testGetOnlyOneFieldsJpaImplementation() throws IllegalAccessException {
+        List<Integer> newsEntities = jpaSearcher.getForIn(NewsEntity.class, "id",
+                getRequestBuilder()
+                        .addFieldQuery(
+                                FieldsQueryBuilder.getFieldsBuilder()
+                                        .addField("articleTopic", "java", EQUAL, EXACT)
+                                        .build())
+                        .build());
+
+        Assert.assertTrue("in  present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
+        Assert.assertEquals(new Integer(1), newsEntities.get(0));
+
+
+    }
+
+    @Test
+    public void testWithSpecification() {
+        Specifications specification = Specifications.where((root, query, builder) -> {
+            query.distinct(true);
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%"));
+        });
+        specification.and((root, query, builder) -> {
+            return (builder.and(builder.like(builder.lower(root.get("articleTopic")), "%java%")));
+        });
+        List<NewsEntity> result = newsRepository.findAll(specification);
+        Assert.assertEquals(2, result.size());
+        Assert.assertEquals(14, result.stream().findFirst().get().getBodyEntity().size());
     }
 
     @Test
@@ -122,11 +168,30 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
+    @Ignore
+    public void testGetFieldsWhichNeededJpa() {
+        List<Map> result = jpaSearcher.getFields(NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+//                                .addField("news.id", "", NOT_NULL, null)
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(), "articleLink", "articleName", "newsEntity.articleTopic");
+        Assert.assertTrue(result.size() > 0);
+        result.stream().forEach(res -> {
+            Map map = res;
+            Assert.assertNotNull(map.get("articleLink"));
+            Assert.assertNotNull(map.get("articleName"));
+            Assert.assertNotNull(map.get("newsEntity.articleTopic"));
+            Assert.assertEquals(3, map.size());
+        });
+    }
+
+    @Test
     public void testGetPageMap() {
         Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                 .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
@@ -134,8 +199,8 @@ public class EntitySearcherTest extends TestConfig {
                         .build(),
                 "articleLink", "articleName", "newsEntity.articleTopic");
         Assert.assertTrue(result.getContent().size() > 0);
-        Assert.assertEquals("44 elements in query",5,result.getTotalPages());
-        Assert.assertEquals(44,result.getTotalElements());
+        Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
+        Assert.assertEquals(44, result.getTotalElements());
         Assert.assertTrue(result.isFirst());
         Assert.assertFalse(result.isLast());
 
@@ -145,11 +210,32 @@ public class EntitySearcherTest extends TestConfig {
                     Assert.assertNotNull(map.get("articleName"));
                     Assert.assertNotNull(map.get("newsEntity.articleTopic"));
                     Assert.assertEquals(3, map.size());
-        });
+                });
     }
 
     @Test
-    public void testGetMapWithSorting(){
+    public void getJpaPage() {
+        Page<NewsBodyEntity> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(),
+                OrderFieldsBuilder.getOrderFieldBuilder()
+                        .addOrderField("newsEntity.menuEntity.menuName", ASC)
+                        .addOrderField("articleLink", ASC)
+                        .addOrderField("newsEntity.articleTopic", DESC)
+                        .build());
+        Assert.assertTrue(result.getContent().size() > 0);
+        Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
+        Assert.assertEquals(44, result.getTotalElements());
+        Assert.assertTrue(result.isFirst());
+        Assert.assertFalse(result.isLast());
+    }
+
+
+    @Test
+    public void testGetMapWithSorting() {
         Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -158,13 +244,13 @@ public class EntitySearcherTest extends TestConfig {
                                 .build())
                         .build(),
                 OrderFieldsBuilder.getOrderFieldBuilder()
-                        .addOrderField("newsEntity.articleTopic",DESC)
-                        .addOrderField("articleName",ASC)
+                        .addOrderField("newsEntity.articleTopic", DESC)
+                        .addOrderField("articleName", ASC)
                         .build(),
                 "articleLink", "articleName", "newsEntity.articleTopic");
         Assert.assertTrue(result.getContent().size() > 0);
-        Assert.assertEquals("44 elements in query",5,result.getTotalPages());
-        Assert.assertEquals(44,result.getTotalElements());
+        Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
+        Assert.assertEquals(44, result.getTotalElements());
         Assert.assertTrue(result.isFirst());
 
         Assert.assertFalse(result.isLast());
@@ -177,6 +263,37 @@ public class EntitySearcherTest extends TestConfig {
                     Assert.assertEquals(3, map.size());
                 });
     }
+
+    @Test
+    @Ignore
+    public void testGetMapWithSortingJpa() {
+        Page<Map> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
+                getRequestBuilder().addFieldQuery(
+                        FieldsQueryBuilder.getFieldsBuilder()
+                                .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
+                                .build())
+                        .build(),
+                OrderFieldsBuilder.getOrderFieldBuilder()
+                        .addOrderField("newsEntity.articleTopic", DESC)
+                        .addOrderField("articleName", ASC)
+                        .build(),
+                "articleLink", "articleName", "newsEntity.articleTopic");
+        Assert.assertTrue(result.getContent().size() > 0);
+        Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
+        Assert.assertEquals(44, result.getTotalElements());
+        Assert.assertTrue(result.isFirst());
+
+        Assert.assertFalse(result.isLast());
+
+        result.getContent().stream()
+                .forEach(map -> {
+                    Assert.assertNotNull(map.get("articleLink"));
+                    Assert.assertNotNull(map.get("articleName"));
+                    Assert.assertNotNull(map.get("newsEntity.articleTopic").equals("databases"));
+                    Assert.assertEquals(3, map.size());
+                });
+    }
+
     @Test
     public void testNotNUll() throws ClassNotFoundException {
         List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,
@@ -191,6 +308,16 @@ public class EntitySearcherTest extends TestConfig {
                         .build());
 
 
+        Assert.assertTrue(result.size() > 0);
+    }
+
+    @Test
+    public void testNotNUllSpecification() {
+        Specification specification = Specifications.where((root, query, builder) -> {
+            query.distinct(true);
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity", JoinType.LEFT)).get("menuName")), "%general%"));
+        });
+        List<NewsEntity> result = newsBodyRepository.findAll(specification);
         Assert.assertTrue(result.size() > 0);
     }
 
@@ -216,6 +343,5 @@ public class EntitySearcherTest extends TestConfig {
         Assert.assertTrue(result.size() == 0);
 
     }
-
 
 }
