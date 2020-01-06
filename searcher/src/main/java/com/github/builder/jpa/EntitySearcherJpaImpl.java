@@ -34,33 +34,25 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
-        if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            return entityManager.createQuery(createQuery(forClass, request)).getResultList();
-        }
-        return entityManager.createQuery(createQueryWithSorting(forClass, request, orderFields)).getResultList();
 
+        return entityManager.createQuery(createQuery(forClass, request, orderFields)).getResultList();
     }
 
     @Override
     public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
-        if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            TypedQuery query = entityManager.createQuery(createQuery(forClass, request));
-
-            return getPage(pageNumber, pageLength, query, forClass);
-        }
-        TypedQuery query = entityManager.createQuery(createQueryWithSorting(forClass, request, orderFields));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, orderFields));
         return getPage(pageNumber, pageLength, query, forClass);
     }
 
     @Override
     public <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            TypedQuery query = entityManager.createQuery(createQuery(forClass, request));
+            TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
             Page<T> result = getPage(0, 1, query, forClass);
             if (!result.getContent().isEmpty())
                 return result.getContent().get(0);
         }
-        TypedQuery query = entityManager.createQuery(createQuery(forClass, request));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
         Page<T> result = getPage(0, 1, query, forClass);
         if (!result.getContent().isEmpty())
             return result.getContent().get(0);
@@ -72,7 +64,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> List getForIn(Class<T> forClass, String entityField, CriteriaRequest request) {
-        TypedQuery query = entityManager.createQuery(createQuery(forClass, request));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
 
         ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
                 .setMaxResults(10000)
@@ -104,31 +96,19 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     }
 
 
-    private <T> CriteriaQuery<T> createQuery(Class<T> forClass, CriteriaRequest request) {
+    private <T> CriteriaQuery<T> createQuery(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(forClass);
 
         Root<T> root = query.from(forClass);
         Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
         query.where(predicates);
-
-
-        return query;
-    }
-
-    private <T> CriteriaQuery<T> createQueryWithSorting(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<T> query = builder.createQuery(forClass);
-        Root<T> root = query.from(forClass);
-
-        Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
-        query.where(predicates);
-
-        List<Order> orders = orderFields
-                .stream()
-                .map(orderField -> predicateCreator.addOrder(builder, root, orderField.getDirection(), orderField.getOrderField())).collect(Collectors.toList());
-        query.orderBy(orders);
-
+        if (Objects.nonNull(orderFields) && !orderFields.isEmpty()) {
+            List<Order> orders = orderFields
+                    .stream()
+                    .map(orderField -> predicateCreator.addOrder(builder, root, orderField.getDirection(), orderField.getOrderField())).collect(Collectors.toList());
+            query.orderBy(orders);
+        }
         return query;
     }
 
@@ -136,7 +116,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery query = builder.createQuery(forClass);
         Root root = query.from(forClass);
-        Expression expression = builder.countDistinct(root);
+        Expression<Long> expression = builder.countDistinct(root);
         query.distinct(true);
         query.select(expression);
         return (Long) entityManager.createQuery(query).getSingleResult();

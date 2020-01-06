@@ -270,7 +270,6 @@ public class EntitySearcherTest extends TestConfig {
         Page<Map> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                 .addField("newsEntity.menuEntity.menuName", "general", LIKE, MatchMode.ANYWHERE)
                                 .build())
                         .build(),
