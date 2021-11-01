@@ -6,7 +6,7 @@
     <artifactId>criteriasearchhelper</artifactId>
     <version>0.0.42-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>criteriasearchhelper</name>
+    <name>criteria search helper</name>
     <description>Criteria builder helper for dynamic sql queries</description>
 
     <parent>
