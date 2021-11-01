@@ -1,4 +1,4 @@
-package com.github.builder.test.model.model;
+package com.github.builder.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

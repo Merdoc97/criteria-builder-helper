@@ -5,6 +5,7 @@ import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.params.annotations.NotDateField;
 import lombok.*;
 import org.hibernate.criterion.MatchMode;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 @ToString
+@Validated
 public class FieldsQuery implements Query{
     /**
      * field name from entity

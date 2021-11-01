@@ -1,24 +1,20 @@
-package com.github.tests;
+package com.github.builder;
 
-import com.github.builder.EntitySearcher;
+import com.github.builder.config.TestConfig;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
 import com.github.builder.fields_query_builder.OrderFieldsBuilder;
-import com.github.builder.test.model.config.TestConfig;
-import com.github.builder.test.model.model.*;
+import com.github.builder.model.*;
 import com.github.builder.util.UtilClass;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import java.lang.reflect.Field;
@@ -37,7 +33,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
  */
 @Slf4j
-public class EntitySearcherTest extends TestConfig {
+class EntitySearcherTest extends TestConfig {
 
     @Autowired
     @Qualifier("searcher")
@@ -52,12 +48,9 @@ public class EntitySearcherTest extends TestConfig {
     @Autowired
     private NewsBodyRepository newsBodyRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
 
     @Test
-    public void testGetOnlyOneFields() throws IllegalAccessException {
+    void testGetOnlyOneFields() throws IllegalAccessException {
         List<Integer> newsEntities = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -73,7 +66,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testGetOnlyOneFieldsJpaImplementation() throws IllegalAccessException {
+    void testGetOnlyOneFieldsJpaImplementation() throws IllegalAccessException {
         List<Integer> newsEntities = jpaSearcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -89,8 +82,8 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testWithSpecification() {
-        Specifications specification = Specifications.where((root, query, builder) -> {
+    void testWithSpecification() {
+        Specification specification = Specification.where((root, query, builder) -> {
             query.distinct(true);
             return builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%"));
         });
@@ -103,7 +96,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testGetOnlyOneFieldsSecond() {
+    void testGetOnlyOneFieldsSecond() {
         List<Integer> result = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
                         .addFieldQuery(
@@ -124,7 +117,7 @@ public class EntitySearcherTest extends TestConfig {
      */
 
     @Test
-    public void testMultipleInclude() {
+    void testMultipleInclude() {
 
         List<Integer> newsEntitiesId = searcher.getForIn(NewsEntity.class, "id",
                 getRequestBuilder()
@@ -149,7 +142,7 @@ public class EntitySearcherTest extends TestConfig {
 
 
     @Test
-    public void testGetFieldsWhichNeeded() {
+    void testGetFieldsWhichNeeded() {
         List<Map> result = searcher.getFields(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -168,8 +161,8 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    @Ignore
-    public void testGetFieldsWhichNeededJpa() {
+    @Disabled
+    void testGetFieldsWhichNeededJpa() {
         List<Map> result = jpaSearcher.getFields(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -188,7 +181,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testGetPageMap() {
+    void testGetPageMap() {
         Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -214,7 +207,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void getJpaPage() {
+    void getJpaPage() {
         Page<NewsBodyEntity> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -235,7 +228,7 @@ public class EntitySearcherTest extends TestConfig {
 
 
     @Test
-    public void testGetMapWithSorting() {
+    void testGetMapWithSorting() {
         Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -265,8 +258,8 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    @Ignore
-    public void testGetMapWithSortingJpa() {
+    @Disabled
+    void testGetMapWithSortingJpa() {
         Page<Map> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -295,7 +288,7 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testNotNUll() throws ClassNotFoundException {
+    void testNotNUll() throws ClassNotFoundException {
         List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()
@@ -312,8 +305,8 @@ public class EntitySearcherTest extends TestConfig {
     }
 
     @Test
-    public void testNotNUllSpecification() {
-        Specification specification = Specifications.where((root, query, builder) -> {
+    void testNotNUllSpecification() {
+        Specification specification = Specification.where((root, query, builder) -> {
             query.distinct(true);
             return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity", JoinType.LEFT)).get("menuName")), "%general%"));
         });
@@ -323,14 +316,14 @@ public class EntitySearcherTest extends TestConfig {
 
 
     @Test
-    public void testUtil() throws ClassNotFoundException {
+    void testUtil() throws ClassNotFoundException {
         Field field = UtilClass.findField(MenuEntity.class, "news.bodyEntity.articleName");
         Assert.assertNotNull(field);
         Assert.assertEquals(field.getDeclaringClass(), NewsBodyEntity.class);
     }
 
     @Test
-    public void testNUll() {
+    void testNUll() {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
                 getRequestBuilder().addFieldQuery(
                         FieldsQueryBuilder.getFieldsBuilder()

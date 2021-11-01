@@ -1,27 +1,25 @@
-package com.github.tests;
+package com.github.builder;
 
-import com.github.builder.CriteriaHelper;
-import com.github.builder.CriteriaRequest;
-import com.github.builder.EntitySearcher;
 import com.github.builder.condition.CriteriaCondition;
 import com.github.builder.condition.CriteriaDateCondition;
+import com.github.builder.config.TestConfig;
 import com.github.builder.fields_query_builder.FieldsQueryBuilder;
+import com.github.builder.hibernate.CriteriaHelperImpl;
 import com.github.builder.jpa.PredicateCreator;
+import com.github.builder.model.NewsBodyEntity;
+import com.github.builder.model.NewsEntity;
+import com.github.builder.model.NewsParseRule;
 import com.github.builder.params.DateQuery;
 import com.github.builder.params.FieldsQuery;
 import com.github.builder.params.OrderFields;
-import com.github.builder.test.model.config.TestConfig;
-import com.github.builder.test.model.model.NewsBodyEntity;
-import com.github.builder.test.model.model.NewsEntity;
-import com.github.builder.test.model.model.NewsParseRule;
-import com.github.builder.test.model.model.ParseRuleRepository;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.exception.SQLGrammarException;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,39 +28,44 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.builder.condition.CriteriaCondition.*;
 import static com.github.builder.fields_query_builder.CriteriaRequestBuilder.getRequestBuilder;
 import static com.github.builder.fields_query_builder.OrderFieldsBuilder.getOrderFieldBuilder;
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
+import static org.junit.Assert.assertThrows;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 /**
-
+ *
  */
 @Transactional
-public class CriteriaTest extends TestConfig {
+class CriteriaTest extends TestConfig {
 
-    @Autowired
     private CriteriaHelper helper;
 
     @Autowired
+    @Qualifier("searcher")
     private EntitySearcher searcher;
-
-    @Autowired
-    private ParseRuleRepository ruleRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    @BeforeEach
+    void before() {
+        this.helper = new CriteriaHelperImpl(entityManager);
+    }
+
     @Test
-    public void simpleQueryForBuilder() {
+    void simpleQueryForBuilder() {
 
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
@@ -75,18 +78,18 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void simpleQueryForBuilderWithSpecBuilder() {
+    void simpleQueryForBuilderWithSpecBuilder() {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<NewsParseRule> query = builder.createQuery(NewsParseRule.class);
         Root<NewsParseRule> root = query.from(NewsParseRule.class);
         PredicateCreator predicateCreator = new PredicateCreator();
-        javax.persistence.criteria.Predicate[] specification= predicateCreator.createPredicates(getRequestBuilder()
+        javax.persistence.criteria.Predicate[] specification = predicateCreator.createPredicates(getRequestBuilder()
                 .addFieldQuery(FieldsQueryBuilder.getFieldsBuilder()
-                        .addField("articleName",".post",LIKE, ANYWHERE)
+                        .addField("articleName", ".post", LIKE, ANYWHERE)
                         .addField("newsId", 1, CriteriaCondition.NOT_LIKE, ANYWHERE)
                         .addField("newsId", 2, EQUAL, MatchMode.START)
                         .build())
-                .build(),builder,root,query);
+                .build(), builder, root, query);
 
         query.select(root).where(specification);
         List<NewsParseRule> result = entityManager.createQuery(query).getResultList();
@@ -95,7 +98,7 @@ public class CriteriaTest extends TestConfig {
 
 
     @Test
-    public void testLikeForDates() {
+    void testLikeForDates() {
         CriteriaRequest request = new CriteriaRequest();
         request.setDateConditions(new HashSet<>(Arrays.asList(
                 new DateQuery("articleDate", LocalDate.parse("2017-03-16"), null, CriteriaDateCondition.MORE))));
@@ -106,7 +109,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithEntity() {
+    void testWithEntity() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
@@ -127,7 +130,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testLikesStart() {
+    void testLikesStart() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("bodyEntity.articleName", "DUMP-2016:", LIKE, MatchMode.START)
@@ -139,7 +142,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testLikesExact() {
+    void testLikesExact() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, EXACT)
@@ -151,7 +154,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testLikesEnd() {
+    void testLikesEnd() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "blog", LIKE, MatchMode.END)
@@ -162,7 +165,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testLessDate() {
+    void testLessDate() {
         CriteriaRequest request = new CriteriaRequest();
         request.setDateConditions(new HashSet<>(Arrays.asList(
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.LESS)
@@ -174,7 +177,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testBetweenDate() {
+    void testBetweenDate() {
         CriteriaRequest request = new CriteriaRequest();
         request.setDateConditions(new HashSet<>(Arrays.asList(
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-16"), LocalDate.parse("2017-03-18"), CriteriaDateCondition.BETWEEN)
@@ -184,18 +187,18 @@ public class CriteriaTest extends TestConfig {
         Assert.assertTrue(result.size() > 0);
     }
 
-    @Test(expected = SQLGrammarException.class)
-    public void testInject() {
+    @Test
+    void testInject() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("id", ";UPDATE news SET article_topic='inject'; select 1", LIKE, MatchMode.END)
         )));
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
-        criteria.list();
+        assertThrows(SQLGrammarException.class, () -> criteria.list());
     }
 
     @Test
-    public void testWithEntityAllByAllExactCriteria() {
+    void testWithEntityAllByAllExactCriteria() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
@@ -224,18 +227,18 @@ public class CriteriaTest extends TestConfig {
 
     }
 
-    @Ignore
-    @Test(expected = javax.validation.ConstraintViolationException.class)
-    public void testConstrains() {
+    @Test
+    void testConstrains() {
         CriteriaRequest request = new CriteriaRequest();
-        request.setConditions(new HashSet<>(Arrays.asList(
-                new FieldsQuery("articleTopic", "2017-03-17", LIKE, ANYWHERE)
-        )));
-        helper.buildCriteria(NewsEntity.class, request);
+        request.setConditions(Set.of(
+                new FieldsQuery("articleTopic", "2017-03-17", null, ANYWHERE)
+        ));
+        assertThrows(ConstraintViolationException.class,()->searcher.getList(NewsEntity.class, request,Set.of()));
+
     }
 
     @Test
-    public void testConstrainsForDates() {
+    void testConstrainsForDates() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", LocalDate.now(), LIKE, ANYWHERE)
@@ -245,7 +248,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testConstrain() {
+    void testConstrain() {
 
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
@@ -258,7 +261,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithSorting() {
+    void testWithSorting() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", Arrays.asList("java", "docker"), LIKE, ANYWHERE),
@@ -291,7 +294,7 @@ public class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithMultipleSorting() {
+    void testWithMultipleSorting() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", LIKE, ANYWHERE),
@@ -363,13 +366,13 @@ public class CriteriaTest extends TestConfig {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
                 getRequestBuilder().addFieldQuery(
-                        FieldsQueryBuilder.getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
-                                .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
-                                .addField("newsEntity.isActive", true, EQUAL, null)
-                                .addField("newsEntity.id", 2, LESS, null)
-                                .addField("newsEntity.id", 0, MORE, null)
-                                .addField("articleLink", "zte", LESS, null)
-                                .build())
+                                FieldsQueryBuilder.getFieldsBuilder().addField("newsEntity.articleTopic", "java", EQUAL, EXACT)
+                                        .addField("articleName", Arrays.asList("java", "docker"), LIKE, ANYWHERE)
+                                        .addField("newsEntity.isActive", true, EQUAL, null)
+                                        .addField("newsEntity.id", 2, LESS, null)
+                                        .addField("newsEntity.id", 0, MORE, null)
+                                        .addField("articleLink", "zte", LESS, null)
+                                        .build())
                         .build(),
                 getOrderFieldBuilder().addOrderField("articleDate", ASC)
                         .addOrderField("articleName", DESC)

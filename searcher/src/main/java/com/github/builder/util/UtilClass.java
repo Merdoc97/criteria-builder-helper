@@ -4,10 +4,12 @@ import com.github.builder.exceptions.RequestFieldNotPresent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
+
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -130,7 +132,7 @@ public class UtilClass {
     private static Class getClassFromCollection(Field field) {
         try {
             return ClassLoader.getSystemClassLoader()
-                    .loadClass(((ParameterizedTypeImpl) field
+                    .loadClass(((ParameterizedType) field
                             .getGenericType())
                             .getActualTypeArguments()[0].getTypeName());
         } catch (ClassNotFoundException e) {

@@ -6,7 +6,6 @@ import com.github.builder.CriteriaRequest;
 import com.github.builder.exceptions.RequestFieldNotPresent;
 import com.github.builder.params.*;
 import com.github.builder.util.FetchModeModifier;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -18,6 +17,7 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -40,21 +40,23 @@ import static com.github.builder.util.UtilClass.isNumber;
  * for like allowed types - integer, string,
  * for boolean types allowed only equal param , true / false
  */
-@AllArgsConstructor
 @Validated
 @Slf4j
 @Transactional(readOnly = true)
-public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
-
+public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHelper {
 
     private final EntityManager entityManager;
+
+    public CriteriaHelperImpl(EntityManager entityManager) {
+        Assert.notNull(entityManager, "entity manager can't be null");
+        this.entityManager = entityManager;
+    }
 
     @Override
     public final Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request) {
 
         if (Objects.isNull(request)) {
-            log.warn("empty request {}", request);
-            throw new IllegalArgumentException("request shouldn't be empty");
+            throw new IllegalArgumentException("Request shouldn't be empty");
         }
         Session session = entityManager.unwrap(Session.class);
         session.setDefaultReadOnly(true);
@@ -128,7 +130,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
 
                     List<Criterion> criterionList = new ArrayList<>();
                     for (Object searchParam : fieldsQuery.getSearchCriteria()) {
-                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass,fieldsQuery.getProperty()));
+                        criterionList.add(forNonDates(new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode()), forClass, fieldsQuery.getProperty()));
                     }
                     Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
                     criteria.add(Restrictions.or(req));
@@ -168,16 +170,16 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
                     List<Criterion> criterionList = new ArrayList<>();
                     for (Object searchParam : fieldsQuery.getSearchCriteria()) {
-                        String[]tmp=fieldsQuery.getProperty().split("\\.");
-                        String alias=tmp[0];
-                        String path=aliasMap.get(alias);
+                        String[] tmp = fieldsQuery.getProperty().split("\\.");
+                        String alias = tmp[0];
+                        String path = aliasMap.get(alias);
 
                         FieldsQueryWrap wrap = new FieldsQueryWrap(fieldsQuery.getProperty(), searchParam, fieldsQuery.getCriteriaCondition(), fieldsQuery.getMatchMode());
                         if (Objects.isNull(path))
-                        criterionList.add(forNonDates(wrap, forClass,wrap.getProperty()));
+                            criterionList.add(forNonDates(wrap, forClass, wrap.getProperty()));
                         else
 //                            if path present always last value be field
-                            criterionList.add(forNonDates(wrap, forClass,path.concat(".").concat(tmp[1])));
+                            criterionList.add(forNonDates(wrap, forClass, path.concat(".").concat(tmp[1])));
                     }
                     Criterion[] req = criterionList.stream().toArray(Criterion[]::new);
                     criteria.add(Restrictions.or(req));
@@ -244,7 +246,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
         fieldsQuery.setProperty(withAliasParam);
     }
 
-    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass,String path) throws NoSuchFieldException, ClassNotFoundException {
+    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
         switch (query.getCriteriaCondition()) {
             case EQUAL:
                 return Restrictions.eq(query.getProperty(), query.getSearchCriteria());
@@ -271,7 +273,7 @@ public class CriteriaQuery extends FetchModeModifier implements CriteriaHelper {
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria()));
 
                 } else if (Objects.nonNull(query.getMatchMode())) {
-                    if (isNumber(forClass,path)) {
+                    if (isNumber(forClass, path)) {
                         return likeForInt(forClass, query.getProperty(), query.getSearchCriteria(), false, query.getMatchMode());
                     }
                     return Restrictions.not(Restrictions.ilike(query.getProperty(), query.getSearchCriteria().toString(), query.getMatchMode()));

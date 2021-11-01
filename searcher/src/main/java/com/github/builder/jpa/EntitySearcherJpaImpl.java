@@ -16,36 +16,39 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
 @AllArgsConstructor
+@Validated
 public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements EntitySearcher {
 
     private final EntityManager entityManager;
     private final PredicateCreator predicateCreator;
 
     @Override
-    public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> List<T> getList(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
 
         return entityManager.createQuery(createQuery(forClass, request, orderFields)).getResultList();
     }
 
     @Override
-    public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         TypedQuery query = entityManager.createQuery(createQuery(forClass, request, orderFields));
         return getPage(pageNumber, pageLength, query, forClass);
     }
 
     @Override
-    public <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> T findEntity(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
             Page<T> result = getPage(0, 1, query, forClass);
@@ -63,7 +66,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     }
 
     @Override
-    public <T> List getForIn(Class<T> forClass, String entityField, CriteriaRequest request) {
+    public <T> List getForIn(Class<T> forClass, String entityField, @Valid CriteriaRequest request) {
         TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
 
         ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
@@ -86,12 +89,12 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     }
 
     @Override
-    public <T> List<Map> getFields(Class<T> forClass, CriteriaRequest request, String... entityFields) {
+    public <T> List<Map> getFields(Class<T> forClass, @Valid CriteriaRequest request, String... entityFields) {
         throw new NotImplementedException();
     }
 
     @Override
-    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
+    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
         throw new UnsupportedOperationException("jpa not support return map result use hibernate implementation instead of jpa implementation");
     }
 
@@ -127,6 +130,6 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         criteria.setMaxResults(pageLength);
         List<T> response = criteria.getResultList();
         Long total = total(forClass);
-        return new PageImpl<>(response, new PageRequest(pageNumber, pageLength), total);
+        return new PageImpl<>(response, PageRequest.of(pageNumber, pageLength), total);
     }
 }

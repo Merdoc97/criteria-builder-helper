@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.springframework.util.ReflectionUtils;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
+
+import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 
 import static com.github.builder.util.UtilClass.isEntityField;
@@ -50,7 +51,7 @@ public abstract class FetchModeModifier {
 
         try {
             if (isOneToManyEntity(forClass, property)) {
-                String className = (((ParameterizedTypeImpl) forClass
+                String className = (((ParameterizedType) forClass
                         .getDeclaredField(property)
                         .getGenericType())
                         .getActualTypeArguments()[0]

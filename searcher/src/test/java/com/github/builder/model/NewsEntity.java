@@ -1,4 +1,4 @@
-package com.github.builder.test.model.model;
+package com.github.builder.model;
 
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;

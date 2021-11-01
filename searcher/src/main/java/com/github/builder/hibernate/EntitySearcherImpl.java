@@ -14,9 +14,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,20 +26,22 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
+ *
  */
 
 @Slf4j
 @Transactional(readOnly = true)
+@Validated
 public class EntitySearcherImpl implements EntitySearcher {
     private final CriteriaHelper criteriaHelper;
 
     public EntitySearcherImpl(EntityManager entityManager) {
         Assert.notNull(entityManager, "entity manager can't be null");
-        this.criteriaHelper = new CriteriaQuery(entityManager);
+        this.criteriaHelper = new CriteriaHelperImpl(entityManager);
     }
 
     @Override
-    public <T> List<T> getList(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> List<T> getList(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
@@ -50,7 +54,7 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
 
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
@@ -65,7 +69,7 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> T findEntity(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+    public <T> T findEntity(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
             Page<T> result = getPage(0, 1, criteria, null);
@@ -84,7 +88,7 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> List getForIn(Class<T> fromClass, String entityField, CriteriaRequest request) {
+    public <T> List getForIn(Class<T> fromClass, String entityField, @Valid CriteriaRequest request) {
         Criteria criteria = criteriaHelper.buildCriteria(fromClass, request);
 
         criteria.setProjection(
@@ -95,21 +99,21 @@ public class EntitySearcherImpl implements EntitySearcher {
     }
 
     @Override
-    public <T> List<Map> getFields(Class<T> fromClass, CriteriaRequest request, String... entityFields) {
-        return getForMap(fromClass, request,null, entityFields).list();
+    public <T> List<Map> getFields(Class<T> fromClass, @Valid CriteriaRequest request, String... entityFields) {
+        return getForMap(fromClass, request, null, entityFields).list();
     }
 
 
     @Override
-    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
+    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            Criteria criteria = getForMap(forClass,request,orderFields,entityFields);
+            Criteria criteria = getForMap(forClass, request, orderFields, entityFields);
             return getPage(pageNumber, pageLength, criteria, null);
 
         }
         //        copy the same for count query
         CriteriaRequest criteriaCount = new CriteriaRequest(request);
-        Criteria criteria = getForMap(forClass, request, orderFields,entityFields);
+        Criteria criteria = getForMap(forClass, request, orderFields, entityFields);
         Criteria forCount = criteriaHelper.buildCriteria(forClass, criteriaCount);
         return getPage(pageNumber, pageLength, criteria, forCount);
     }
@@ -117,12 +121,11 @@ public class EntitySearcherImpl implements EntitySearcher {
 
     private <T> Criteria getForMap(Class<T> fromClass, CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
 
-        Criteria criteria=null;
+        Criteria criteria = null;
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             criteria = criteriaHelper.buildCriteria(fromClass, request);
-        }
-        else {
-            criteria = criteriaHelper.buildCriteria(fromClass, request,orderFields);
+        } else {
+            criteria = criteriaHelper.buildCriteria(fromClass, request, orderFields);
         }
         ProjectionList projectionList = Projections.projectionList();
         /*
@@ -159,7 +162,7 @@ public class EntitySearcherImpl implements EntitySearcher {
             total = (Long) criteria.uniqueResult();
         }
 
-        return new PageImpl<>(response, new PageRequest(pageNumber, pageLength), total);
+        return new PageImpl<>(response, PageRequest.of(pageNumber, pageLength), total);
     }
 
 }

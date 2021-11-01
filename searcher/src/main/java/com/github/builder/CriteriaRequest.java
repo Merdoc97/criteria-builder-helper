@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import com.github.builder.params.FieldsQuery;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Setter
 @EqualsAndHashCode
 @ToString
+@Validated
 public class CriteriaRequest {
     @Valid
     private Set<FieldsQuery>conditions;
