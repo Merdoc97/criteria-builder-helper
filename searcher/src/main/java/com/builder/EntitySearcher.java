@@ -3,6 +3,7 @@ package com.builder;
 
 import com.builder.params.OrderFields;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -51,5 +52,6 @@ public interface EntitySearcher {
      */
     <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields);
 
+    <T> Specification<T> createSpecification(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields);
 
 }

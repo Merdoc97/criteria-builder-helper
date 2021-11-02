@@ -1,6 +1,7 @@
 package com.builder.util;
 
 import com.builder.exceptions.RequestFieldNotPresent;
+import com.builder.params.annotations.CriteriaField;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -9,11 +10,11 @@ import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 
 /**
@@ -21,7 +22,6 @@ import static java.util.Objects.isNull;
  */
 @Slf4j
 public class UtilClass {
-
 
     private UtilClass() {
     }
@@ -116,7 +116,7 @@ public class UtilClass {
 
     public static String getIdField(Class forClass) {
         Field[] fields = forClass.getDeclaredFields();
-        return Arrays.stream(fields)
+        return stream(fields)
                 .filter(field -> field.isAnnotationPresent(Id.class))
                 .findFirst()
                 .orElseThrow(() -> new RequestFieldNotPresent("id field not present"))
@@ -136,5 +136,73 @@ public class UtilClass {
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("class not found");
         }
+    }
+
+    public static List<String> getCriteriaFields(Class forClass) {
+        if (!isEntity(forClass)) {
+            return emptyList();
+        }
+        var annotatedFields = stream(forClass.getDeclaredFields())
+                .filter(field -> stream(field.getDeclaredAnnotations()).anyMatch(annotation -> annotation.annotationType().equals(CriteriaField.class)))
+                .map(Field::getName)
+                .collect(Collectors.toList());
+        var entityFields = annotatedFields.stream()
+                .filter(field -> isEntityField(forClass, field))
+                .collect(Collectors.toList())
+                .stream()
+                .map(entityField -> {
+                    return new Pair(entityField, getFieldClass(forClass, entityField));
+                }).filter(pair -> pair.getaClass() != null)
+                .flatMap(pair -> getCriteriaFields(pair.getaClass())
+                        .stream()
+                        .map(field -> pair.getField().concat(".").concat(field))
+                        .collect(Collectors.toList()).stream())
+                .collect(Collectors.toList());
+        var result = annotatedFields.stream()
+                .filter(field -> !isEntityField(forClass, field))
+                .collect(Collectors.toList());
+        result.addAll(entityFields);
+        return result;
+
+
+    }
+
+    private static class Pair {
+        private final String field;
+        private final Class aClass;
+
+        public Pair(String field, Class aClass) {
+            this.field = field;
+            this.aClass = aClass;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Class getaClass() {
+            return aClass;
+        }
+    }
+
+    public static Class<?> getFieldClass(Class forClass, String fieldName) {
+        var resultField = Optional.ofNullable(forClass)
+                .stream()
+                .flatMap(aClass -> Arrays.stream(aClass.getDeclaredFields()))
+                .filter(field -> field.getName().equals(fieldName))
+                .findFirst();
+        if (resultField.isPresent() && isCollection(resultField.get())) {
+            return getClassFromCollection(resultField.get());
+        }
+        return resultField.<Class<?>>map(Field::getType).orElse(null);
+    }
+
+    public static boolean isEntity(Class forClass) {
+        if (forClass == null) {
+            return false;
+        }
+        return stream(forClass.getAnnotations())
+                .anyMatch(annotation -> annotation.annotationType().equals(Entity.class));
+
     }
 }

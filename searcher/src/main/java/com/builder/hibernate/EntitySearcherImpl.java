@@ -12,6 +12,7 @@ import org.hibernate.criterion.Projections;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
@@ -118,6 +119,11 @@ public class EntitySearcherImpl implements EntitySearcher {
         Criteria criteria = getForMap(forClass, request, orderFields, entityFields);
         Criteria forCount = criteriaHelper.buildCriteria(forClass, criteriaCount);
         return getPage(pageNumber, pageLength, criteria, forCount);
+    }
+
+    @Override
+    public <T> Specification<T> createSpecification(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
+        throw new UnsupportedOperationException("Hibernate implementation not supported specifications");
     }
 
 

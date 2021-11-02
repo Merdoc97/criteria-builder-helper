@@ -1,5 +1,6 @@
 package com.builder.model;
 
+import com.builder.params.annotations.CriteriaField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 public class NewsBodyEntity {
     @Id
     @Column(name = "article_link")
+    @CriteriaField
     private String articleLink;
 
     @Column(name = "article_name")
@@ -28,6 +30,7 @@ public class NewsBodyEntity {
     private String articleBody;
 
     @Column(name = "news_fk")
+    @CriteriaField
     private Integer newsFk;
 
     @ManyToOne

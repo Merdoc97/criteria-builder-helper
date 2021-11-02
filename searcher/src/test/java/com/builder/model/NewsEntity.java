@@ -1,5 +1,6 @@
 package com.builder.model;
 
+import com.builder.params.annotations.CriteriaField;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -19,12 +20,14 @@ public class NewsEntity {
     @GeneratedValue(generator = "news_seq",strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(catalog = "sequences", name = "news_seq",
             sequenceName = "news_seq_pk", allocationSize = 1)
+    @CriteriaField
     private Integer id;
 
     @Column(name = "article_topic")
     private String articleTopic;
 
     @Column(name = "is_active")
+    @CriteriaField
     private Boolean isActive;
 
     @Column(name = "is_parsed_today")
@@ -35,6 +38,7 @@ public class NewsEntity {
     private MenuEntity menuEntity;
 
     @OneToMany(mappedBy = "newsEntity")
+    @CriteriaField
     private List<NewsBodyEntity> bodyEntity;
 
     public NewsEntity(String articleTopic, Boolean isActive, Boolean isParsedToday) {

@@ -1,6 +1,7 @@
 package com.builder.model;
 
 
+import com.builder.params.annotations.CriteriaField;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -17,6 +18,7 @@ public class NewsParseRule {
     @GeneratedValue(generator = "rule_seq",strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(catalog = "sequences", name = "rule_seq",
             sequenceName = "rule_seq_pk", allocationSize = 1)
+    @CriteriaField
     private Integer id;
 
     @Column(name = "url_format")
@@ -44,10 +46,12 @@ public class NewsParseRule {
     private Integer maxPages;
 
     @Column(name = "isonepage")
+    @CriteriaField
     private boolean isOnePage;
 
     @OneToOne
     @JoinColumn(name = "news_bd_fk", referencedColumnName = "news_pk", insertable = false, updatable = false)
+    @CriteriaField
     private NewsEntity newsEntity;
 
     public NewsParseRule() {

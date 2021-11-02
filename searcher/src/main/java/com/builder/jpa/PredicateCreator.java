@@ -2,32 +2,51 @@ package com.builder.jpa;
 
 import com.builder.CriteriaRequest;
 import com.builder.params.FieldsQueryWrap;
+import com.builder.params.OrderFields;
 import org.hibernate.criterion.MatchMode;
 import org.springframework.data.domain.Sort;
 
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.builder.util.UtilClass.getIdField;
 
 public class PredicateCreator {
 
-
     public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query) {
-
-        List<Predicate> predicates = new ArrayList<>();
-
-        query.distinct(true);
-        request.getConditions().stream()
-                .forEach(conditions -> {
-                    conditions.getSearchCriteria().forEach(o -> {
-                        predicates.add(criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))));
-                    });
-                });
+        var predicates = request.getConditions().stream()
+                .flatMap(conditions -> {
+                    return conditions.getSearchCriteria().stream()
+                            .map(o -> criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))))
+                            .collect(Collectors.toList()).stream();
+                }).collect(Collectors.toList());
 
         Predicate[] res = new Predicate[predicates.size()];
         res = predicates.toArray(res);
         return res;
+    }
+
+    public Predicate[] createPredicates(Class forClass, CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query, Set<OrderFields> orderFields) {
+        var predicates = createPredicates(request, criteriaBuilder, root, query);
+        addOrdersAndGroups(forClass, criteriaBuilder, root, query, orderFields);
+        return predicates;
+    }
+
+    private void addOrdersAndGroups(Class forClass, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query, Set<OrderFields> fields) {
+        Set<OrderFields> orderFields = fields != null ? fields : Set.of();
+        var orders = orderFields
+                .stream()
+                .map(orderField -> addOrder(criteriaBuilder, root, orderField.getDirection(), orderField.getOrderField()))
+                .collect(Collectors.toList());
+
+        var expressions = orderFields.stream()
+                .map(orderField -> getFetch(root, orderField.getOrderField()))
+                .collect(Collectors.toList());
+        expressions.add(root.get(getIdField(forClass)));
+        query.groupBy(expressions);
+        query.orderBy(orders);
     }
 
     private Predicate toPredicate(Root root, CriteriaBuilder builder, FieldsQueryWrap fieldsQuery) {
@@ -49,25 +68,28 @@ public class PredicateCreator {
             case NOT_NULL:
                 return builder.and(builder.isNotNull(getFetch(root, fieldsQuery.getProperty())));
             case NOT_EQUAL:
-
                 return builder.and(builder.notEqual(getFetch(root, fieldsQuery.getProperty()), fieldsQuery.getSearchCriteria()));
         }
         throw new IllegalArgumentException("unknown condition for query");
     }
 
-    Path getFetch(Root root, String property) {
+    private static Path getFetch(Root root, String property) {
         String[] tmp = property.split("\\.");
-
         if (tmp.length > 2) {
-            Fetch path = root.fetch(tmp[0], JoinType.LEFT);
-            for (int i = 1; i < tmp.length - 1; i++) {
-                path = path.fetch(tmp[i], JoinType.LEFT);
-            }
 
-            return ((Path) path).get(tmp[tmp.length - 1]);
+            Join path = root.join(tmp[0]);
+            path.alias(tmp[0]);
+            for (int i = 1; i < tmp.length - 1; i++) {
+                path = path.join(tmp[i], JoinType.LEFT);
+                path.alias(tmp[i]);
+            }
+            return path.get(tmp[tmp.length - 1]);
         }
-        if (tmp.length > 1)
-            return ((Path) root.fetch(tmp[0], JoinType.LEFT)).get(tmp[1]);
+        if (tmp.length > 1) {
+            Path res = ((Path) root.join(tmp[0], JoinType.LEFT));
+            res.alias(tmp[0]);
+            return res.get(tmp[1]);
+        }
 
         return root.get(tmp[0]);
 

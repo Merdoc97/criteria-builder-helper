@@ -15,6 +15,7 @@ import org.hibernate.query.criteria.internal.compile.CriteriaQueryTypeQueryAdapt
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
@@ -37,7 +38,6 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> List<T> getList(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
-
         return entityManager.createQuery(createQuery(forClass, request, orderFields)).getResultList();
     }
 
@@ -98,6 +98,13 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         throw new UnsupportedOperationException("jpa not support return map result use hibernate implementation instead of jpa implementation");
     }
 
+    @Override
+    public <T> Specification<T> createSpecification(Class<T> forClass, CriteriaRequest request, Set<OrderFields> sort) {
+        return Specification.where((root, criteriaQuery, criteriaBuilder) -> {
+            return criteriaBuilder.and(predicateCreator.createPredicates(forClass, request, criteriaBuilder, root, criteriaQuery, sort));
+        });
+    }
+
 
     private <T> CriteriaQuery<T> createQuery(Class<T> forClass, CriteriaRequest request, Set<OrderFields> orderFields) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -106,12 +113,14 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         Root<T> root = query.from(forClass);
         Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
         query.where(predicates);
+
         if (Objects.nonNull(orderFields) && !orderFields.isEmpty()) {
             List<Order> orders = orderFields
                     .stream()
                     .map(orderField -> predicateCreator.addOrder(builder, root, orderField.getDirection(), orderField.getOrderField())).collect(Collectors.toList());
             query.orderBy(orders);
         }
+
         return query;
     }
 

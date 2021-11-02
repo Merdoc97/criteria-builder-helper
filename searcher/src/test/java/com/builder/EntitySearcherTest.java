@@ -8,6 +8,7 @@ import com.builder.fields_query_builder.OrderFieldsBuilder;
 import com.builder.model.*;
 import com.builder.util.UtilClass;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.Join;
@@ -23,6 +25,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
@@ -206,6 +209,7 @@ class EntitySearcherTest extends TestConfig {
                 });
     }
 
+
     @Test
     void getJpaPage() {
         Page<NewsBodyEntity> result = jpaSearcher.getPage(0, 10, NewsBodyEntity.class,
@@ -226,6 +230,26 @@ class EntitySearcherTest extends TestConfig {
         Assert.assertFalse(result.isLast());
     }
 
+    @Test
+    void getJpaPageWithSpecification() {
+        var specification = jpaSearcher.createSpecification(NewsBodyEntity.class,
+                CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
+                                FieldsQueryBuilder.getFieldsBuilder()
+                                        .addField("newsEntity.menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
+                                        .build())
+                        .build(),
+                OrderFieldsBuilder.getOrderFieldBuilder()
+                        .addOrderField("newsEntity.menuEntity.menuName", ASC)
+                        .addOrderField("articleLink", ASC)
+                        .addOrderField("newsEntity.articleTopic", DESC)
+                        .build());
+        var result = newsBodyRepository.findAll(specification, PageRequest.of(0, 10));
+        Assert.assertTrue(result.getContent().size() > 0);
+        Assert.assertEquals("44 elements in query", 5, result.getTotalPages());
+        Assert.assertEquals(44, result.getTotalElements());
+        Assert.assertTrue(result.isFirst());
+        Assert.assertFalse(result.isLast());
+    }
 
     @Test
     void testGetMapWithSorting() {
@@ -337,4 +361,20 @@ class EntitySearcherTest extends TestConfig {
 
     }
 
+    @Test
+    void testSearchWithCriteriaFields() {
+        var searchField = UtilClass.getCriteriaFields(NewsEntity.class)
+                .stream()
+                .filter(field -> field.equals("id"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("id field is declared as criteria field"));
+        var specification = jpaSearcher.createSpecification(NewsEntity.class,
+                CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
+                                FieldsQueryBuilder.getFieldsBuilder()
+                                        .addField(searchField, 5, CriteriaCondition.EQUAL, null)
+                                        .build())
+                        .build(), Set.of());
+        var result = newsRepository.findAll(specification);
+        Assertions.assertThat(result).hasSize(1);
+    }
 }
