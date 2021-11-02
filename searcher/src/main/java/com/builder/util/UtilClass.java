@@ -152,8 +152,8 @@ public class UtilClass {
                 .stream()
                 .map(entityField -> {
                     return new Pair(entityField, getFieldClass(forClass, entityField));
-                }).filter(pair -> pair.getaClass() != null)
-                .flatMap(pair -> getCriteriaFields(pair.getaClass())
+                }).filter(pair -> pair.getAClass() != null)
+                .flatMap(pair -> getCriteriaFields(pair.getAClass())
                         .stream()
                         .map(field -> pair.getField().concat(".").concat(field))
                         .collect(Collectors.toList()).stream())
@@ -180,7 +180,7 @@ public class UtilClass {
             return field;
         }
 
-        public Class getaClass() {
+        public Class getAClass() {
             return aClass;
         }
     }
