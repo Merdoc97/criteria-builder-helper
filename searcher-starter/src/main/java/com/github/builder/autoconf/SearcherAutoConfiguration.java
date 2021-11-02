@@ -26,6 +26,8 @@ public class SearcherAutoConfiguration {
     private EntityManager entityManager;
 
     @Bean
+    @ConditionalOnClass({EntitySearcher.class})
+    @ConditionalOnMissingBean({EntitySearcher.class})
     public EntitySearcher searcher() {
         Assert.notNull(entityManager,"entity manager can't be null for EntitySearcher");
         return new EntitySearcherImpl(entityManager);
@@ -34,7 +36,6 @@ public class SearcherAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean({LocalValidatorFactoryBean.class})
     public LocalValidatorFactoryBean localValidatorFactoryBean() {
-        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-        return bean;
+        return new LocalValidatorFactoryBean();
     }
 }

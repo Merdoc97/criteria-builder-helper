@@ -29,16 +29,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
-        <full-artifact-name>target/${build.finalName}.jar</full-artifact-name>
         <hikari-pool-version>2.4.5</hikari-pool-version>
-        <postgres-driver-version>42.0.0</postgres-driver-version>
-        <jsoup-version>1.9.2</jsoup-version>
-        <flyway-version>4.1.1</flyway-version>
         <release-plugin-version>2.5.3</release-plugin-version>
-        <serfire-plugin-version>2.18.1</serfire-plugin-version>
-        <compile-plugin-version>2.5.1</compile-plugin-version>
-        <javax-el-api.version>3.0.1-b08</javax-el-api.version>
-        <hibernate.version>5.3.1.Final</hibernate.version>
         <testcontainers.version>1.14.3</testcontainers.version>
     </properties>
 
@@ -95,8 +87,5 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <build>
-
-    </build>
 
 </project>

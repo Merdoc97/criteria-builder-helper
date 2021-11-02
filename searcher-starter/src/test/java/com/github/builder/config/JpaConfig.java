@@ -1,4 +1,4 @@
-package com.github.builder.test.config;
+package com.github.builder.config;
 
 import com.github.builder.CriteriaHelper;
 import com.github.builder.hibernate.CriteriaHelperImpl;
@@ -17,15 +17,14 @@ import javax.persistence.EntityManager;
  */
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"com.github"})
+@EnableJpaRepositories
 @Slf4j
 public class JpaConfig {
     //bean validator
     @Bean
     @Primary
     public LocalValidatorFactoryBean localValidatorFactoryBean() {
-        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-        return bean;
+        return new LocalValidatorFactoryBean();
     }
 
     @Bean

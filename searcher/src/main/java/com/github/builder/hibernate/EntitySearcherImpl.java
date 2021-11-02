@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.hibernate.criterion.CriteriaSpecification.ALIAS_TO_ENTITY_MAP;
+
 /**
  *
  */
@@ -132,13 +134,10 @@ public class EntitySearcherImpl implements EntitySearcher {
          * add fields to projections set
          * */
         Stream.of(entityFields)
-                .forEach(entityField -> {
-                    projectionList
-                            .add(Projections.property(entityField), entityField);
-                });
+                .forEach(entityField -> projectionList.add(Projections.property(entityField), entityField));
 
         criteria.setProjection(projectionList);
-        criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+        criteria.setResultTransformer(ALIAS_TO_ENTITY_MAP);
         return criteria;
     }
 
