@@ -1,4 +1,4 @@
-package com.github.builder.autoconf;
+package com.github.builder.autoconfiguration;
 
 
 import com.github.builder.EntitySearcher;
@@ -26,8 +26,7 @@ public class SearcherAutoConfiguration {
     private EntityManager entityManager;
 
     @Bean
-    @ConditionalOnClass({EntitySearcher.class})
-    @ConditionalOnMissingBean({EntitySearcher.class})
+    @ConditionalOnMissingBean(value = {EntitySearcher.class})
     public EntitySearcher searcher() {
         Assert.notNull(entityManager,"entity manager can't be null for EntitySearcher");
         return new EntitySearcherImpl(entityManager);

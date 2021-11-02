@@ -22,7 +22,7 @@
 
     <modules>
         <module>searcher</module>
-        <module>searcher-starter</module>
+<!--        <module>searcher-starter</module>-->
     </modules>
 
     <properties>
@@ -33,7 +33,6 @@
         <release-plugin-version>2.5.3</release-plugin-version>
         <testcontainers.version>1.14.3</testcontainers.version>
     </properties>
-
 
     <dependencies>
         <dependency>

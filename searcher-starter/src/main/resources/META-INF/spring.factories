@@ -1,2 +1,1 @@
-
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.builder.autoconf.SearcherAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.builder.autoconfiguration.SearcherAutoConfiguration
