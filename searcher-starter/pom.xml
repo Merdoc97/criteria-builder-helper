@@ -28,9 +28,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>1.5.12.RELEASE</version>
                 <configuration>
-                    <layout>NONE</layout>
-                    <executable>false</executable>
+                    <layout>MODULE</layout>
                 </configuration>
             </plugin>
             <plugin>
