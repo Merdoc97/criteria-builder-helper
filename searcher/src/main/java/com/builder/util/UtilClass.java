@@ -148,15 +148,13 @@ public class UtilClass {
                 .collect(Collectors.toList());
         var entityFields = annotatedFields.stream()
                 .filter(field -> isEntityField(forClass, field))
-                .collect(Collectors.toList())
-                .stream()
                 .map(entityField -> {
                     return new Pair(entityField, getFieldClass(forClass, entityField));
-                }).filter(pair -> pair.getAClass() != null)
+                })
+                .filter(pair -> pair.getAClass() != null)
                 .flatMap(pair -> getCriteriaFields(pair.getAClass())
                         .stream()
-                        .map(field -> pair.getField().concat(".").concat(field))
-                        .collect(Collectors.toList()).stream())
+                        .map(field -> pair.getField().concat(".").concat(field)))
                 .collect(Collectors.toList());
         var result = annotatedFields.stream()
                 .filter(field -> !isEntityField(forClass, field))
