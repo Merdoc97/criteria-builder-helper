@@ -1,0 +1,8 @@
+@Library("jenkins-util")_
+
+generalCiLibrary(
+    branch: "dev",
+    scmUrl: "git@github.com:Merdoc97/criteria-builder-helper.git",
+    mavenModule: "searcher/",
+    generateReport: true
+)
