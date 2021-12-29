@@ -25,7 +25,7 @@ public class FieldsQueryBuilder {
     }
 
     public class Builder {
-        private Set<FieldsQuery> fieldsQueries;
+        private final Set<FieldsQuery> fieldsQueries;
 
         public Builder() {
             this.fieldsQueries = new HashSet<>();

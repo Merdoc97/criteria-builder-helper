@@ -22,7 +22,7 @@ public class DatesQueryBuilder {
     }
 
     public class Builder {
-        private Set<DateQuery> dateQueries;
+        private final Set<DateQuery> dateQueries;
 
         public Builder() {
             this.dateQueries = new HashSet<>();

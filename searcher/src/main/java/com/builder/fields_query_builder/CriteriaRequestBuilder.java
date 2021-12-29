@@ -21,8 +21,8 @@ public class CriteriaRequestBuilder {
     }
 
     public class Builder {
-        private Set<FieldsQuery> conditions;
-        private Set<DateQuery> dateConditions;
+        private final Set<FieldsQuery> conditions;
+        private final Set<DateQuery> dateConditions;
 
         public Builder() {
             this.conditions = new HashSet<>();

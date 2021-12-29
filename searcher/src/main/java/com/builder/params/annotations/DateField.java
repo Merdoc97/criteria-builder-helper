@@ -9,9 +9,10 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ *
  */
-@Constraint(validatedBy = { DateFieldValidator.class})
-@Target({FIELD,ANNOTATION_TYPE,PARAMETER})
+@Constraint(validatedBy = {DateFieldValidator.class})
+@Target({FIELD, ANNOTATION_TYPE, PARAMETER})
 @Retention(RUNTIME)
 public @interface DateField {
     String message() default "only date fields allowed";

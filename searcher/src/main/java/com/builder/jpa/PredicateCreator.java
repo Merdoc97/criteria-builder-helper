@@ -86,7 +86,7 @@ public class PredicateCreator {
             return path.get(tmp[tmp.length - 1]);
         }
         if (tmp.length > 1) {
-            Path res = ((Path) root.join(tmp[0], JoinType.LEFT));
+            Path res = root.join(tmp[0], JoinType.LEFT);
             res.alias(tmp[0]);
             return res.get(tmp[1]);
         }

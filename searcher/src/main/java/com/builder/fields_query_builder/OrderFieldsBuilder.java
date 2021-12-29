@@ -20,7 +20,7 @@ public class OrderFieldsBuilder {
     }
 
     public class Builder {
-        private Set<OrderFields> orderFields;
+        private final Set<OrderFields> orderFields;
 
         public Builder() {
             this.orderFields = new HashSet<>();

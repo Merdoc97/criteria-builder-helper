@@ -9,11 +9,11 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-
+ *
  */
 
-@Constraint(validatedBy = { FieldForNotDateValidator.class})
-@Target({FIELD,ANNOTATION_TYPE,PARAMETER})
+@Constraint(validatedBy = {FieldForNotDateValidator.class})
+@Target({FIELD, ANNOTATION_TYPE, PARAMETER})
 @Retention(RUNTIME)
 public @interface NotDateField {
     String message() default "date field not allowed";
