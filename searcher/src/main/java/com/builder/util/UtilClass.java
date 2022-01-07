@@ -6,11 +6,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -21,7 +30,8 @@ import static java.util.Objects.isNull;
  *
  */
 @Slf4j
-public class UtilClass {
+@SuppressWarnings({"checkstyle:UnnecessaryParentheses", "checkstyle:BooleanExpressionComplexity"})
+public final class UtilClass {
 
     private UtilClass() {
     }
@@ -93,10 +103,11 @@ public class UtilClass {
         for (String property : tmp) {
             Field tmpField = ReflectionUtils.findField(tmpClass, property);
             if (Objects.nonNull(tmpField)) {
-                if (isCollection(tmpField))
+                if (isCollection(tmpField)) {
                     tmpClass = getClassFromCollection(tmpField);
-                else
+                } else {
                     tmpClass = tmpField.getDeclaringClass();
+                }
                 result = tmpField;
             }
         }
@@ -133,7 +144,7 @@ public class UtilClass {
                     .loadClass(((ParameterizedType) field
                             .getGenericType())
                             .getActualTypeArguments()[0].getTypeName());
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             throw new IllegalArgumentException("class not found");
         }
     }
@@ -165,24 +176,6 @@ public class UtilClass {
 
     }
 
-    private static class Pair {
-        private final String field;
-        private final Class aClass;
-
-        public Pair(String field, Class aClass) {
-            this.field = field;
-            this.aClass = aClass;
-        }
-
-        public String getField() {
-            return field;
-        }
-
-        public Class getAClass() {
-            return aClass;
-        }
-    }
-
     public static Class<?> getFieldClass(Class forClass, String fieldName) {
         var resultField = Optional.ofNullable(forClass)
                 .stream()
@@ -203,4 +196,24 @@ public class UtilClass {
                 .anyMatch(annotation -> annotation.annotationType().equals(Entity.class));
 
     }
+
+    private static class Pair {
+
+        private final String field;
+        private final Class aClass;
+
+        Pair(String field, Class aClass) {
+            this.field = field;
+            this.aClass = aClass;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Class getAClass() {
+            return aClass;
+        }
+    }
+
 }

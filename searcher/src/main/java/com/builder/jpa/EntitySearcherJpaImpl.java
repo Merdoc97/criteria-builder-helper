@@ -22,9 +22,18 @@ import org.springframework.validation.annotation.Validated;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,6 +42,7 @@ import java.util.stream.Collectors;
 @Validated
 public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements EntitySearcher {
 
+    private static final int MAX_RESULT_FOR_IN = 10000;
     private final EntityManager entityManager;
     private final PredicateCreator predicateCreator;
 
@@ -52,14 +62,15 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
             Page<T> result = getPage(0, 1, query, forClass);
-            if (!result.getContent().isEmpty())
+            if (!result.getContent().isEmpty()) {
                 return result.getContent().get(0);
+            }
         }
         TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
         Page<T> result = getPage(0, 1, query, forClass);
-        if (!result.getContent().isEmpty())
+        if (!result.getContent().isEmpty()) {
             return result.getContent().get(0);
-        else {
+        } else {
             log.info("entity not found for request : {}", request.toString());
             throw new EntityNotFoundException("entity with request not found request : ".concat(request.toString()));
         }
@@ -70,7 +81,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
 
         ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
-                .setMaxResults(10000)
+                .setMaxResults(MAX_RESULT_FOR_IN)
                 .setCacheable(false)
                 .scroll(ScrollMode.FORWARD_ONLY);
 
@@ -79,7 +90,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
             Object row = results.get(0);
             try {
                 objects.add(UtilClass.getFieldValue(forClass, entityField, row));
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 log.error("can't get field from entity please check is it field present");
                 throw new RequestFieldNotPresent("can't get field from entity please check is it field present", e.getCause());
             }
@@ -94,7 +105,8 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
     }
 
     @Override
-    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
+    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields,
+                                 String... entityFields) {
         throw new UnsupportedOperationException("jpa not support return map result use hibernate implementation instead of jpa implementation");
     }
 
@@ -117,7 +129,8 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         if (Objects.nonNull(orderFields) && !orderFields.isEmpty()) {
             List<Order> orders = orderFields
                     .stream()
-                    .map(orderField -> predicateCreator.addOrder(builder, root, orderField.getDirection(), orderField.getOrderField())).collect(Collectors.toList());
+                    .map(orderField -> predicateCreator.addOrder(builder, root, orderField.getDirection(), orderField.getOrderField()))
+                    .collect(Collectors.toList());
             query.orderBy(orders);
         }
 

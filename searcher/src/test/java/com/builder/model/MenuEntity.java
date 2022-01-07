@@ -4,7 +4,15 @@ import com.builder.params.annotations.CriteriaField;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import java.util.List;
 
 /**
@@ -18,7 +26,7 @@ public class MenuEntity {
 
     @Id
     @Column(name = "tpname_pk")
-    @GeneratedValue(generator = "menu_seq",strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "menu_seq", strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(catalog = "sequences", name = "menu_seq",
             sequenceName = "menu_seq_pk", allocationSize = 1)
     @CriteriaField

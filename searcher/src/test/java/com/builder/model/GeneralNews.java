@@ -13,20 +13,21 @@ import java.time.LocalDate;
  */
 @MappedSuperclass
 @Data
+@SuppressWarnings("checkstyle:MagicNumber")
 public class GeneralNews {
 
     @Id
     @Column(name = "art_link_pk", unique = true, length = 1000, updatable = false)
-    String linkReadMore;
+    private String linkReadMore;
 
     @Column(name = "art_name", length = 500)
-    String articleName;
+    private String articleName;
 
     @Column(name = "art_date", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    LocalDate articleDate;
+    private LocalDate articleDate;
 
     @Column(name = "art_body", length = 500)
-    String articleBody;
+    private String articleBody;
 
 }

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ *
  */
 @Getter
 @Setter
@@ -22,20 +23,22 @@ import java.util.Set;
 @Validated
 public class CriteriaRequest {
     @Valid
-    private Set<FieldsQuery>conditions;
-    private Set<DateQuery>dateConditions;
+    private Set<FieldsQuery> conditions;
+    private Set<DateQuery> dateConditions;
 
     public CriteriaRequest() {
     }
 
     public CriteriaRequest(CriteriaRequest request) {
-        this.conditions=new HashSet<>();
-        this.dateConditions=new HashSet<>();
+        this.conditions = new HashSet<>();
+        this.dateConditions = new HashSet<>();
         request.getConditions().forEach(fieldsQuery -> {
-            conditions.add(new FieldsQuery(fieldsQuery.getProperty(),fieldsQuery.getSearchCriteria(),fieldsQuery.getCriteriaCondition(),fieldsQuery.getMatchMode()));
+            conditions.add(new FieldsQuery(fieldsQuery.getProperty(), fieldsQuery.getSearchCriteria(), fieldsQuery.getCriteriaCondition(),
+                    fieldsQuery.getMatchMode()));
         });
         request.getDateConditions().forEach(dateQuery -> {
-            dateConditions.add(new DateQuery(dateQuery.getProperty(),dateQuery.getSearchParam(),dateQuery.getSecondSearchParam(),dateQuery.getCriteriaCondition()));
+            dateConditions.add(
+                    new DateQuery(dateQuery.getProperty(), dateQuery.getSearchParam(), dateQuery.getSecondSearchParam(), dateQuery.getCriteriaCondition()));
         });
     }
 

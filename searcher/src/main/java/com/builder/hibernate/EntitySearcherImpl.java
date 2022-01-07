@@ -76,14 +76,15 @@ public class EntitySearcherImpl implements EntitySearcher {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
             Page<T> result = getPage(0, 1, criteria, null);
-            if (!result.getContent().isEmpty())
+            if (!result.getContent().isEmpty()) {
                 return result.getContent().get(0);
+            }
         }
         Criteria criteria = criteriaHelper.buildCriteria(forClass, request);
         Page<T> result = getPage(0, 1, criteria, null);
-        if (!result.getContent().isEmpty())
+        if (!result.getContent().isEmpty()) {
             return result.getContent().get(0);
-        else {
+        } else {
             log.info("entity not found for request : {}", request.toString());
             throw new EntityNotFoundException("entity with request not found request : ".concat(request.toString()));
         }
@@ -108,7 +109,8 @@ public class EntitySearcherImpl implements EntitySearcher {
 
 
     @Override
-    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields) {
+    public <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields,
+                                 String... entityFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
             Criteria criteria = getForMap(forClass, request, orderFields, entityFields);
             return getPage(pageNumber, pageLength, criteria, null);

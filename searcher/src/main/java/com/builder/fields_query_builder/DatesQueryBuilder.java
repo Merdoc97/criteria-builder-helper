@@ -11,14 +11,15 @@ import java.util.Set;
 /**
  *
  */
-public class DatesQueryBuilder {
+public final class DatesQueryBuilder {
+
     private static final DatesQueryBuilder QUERY = new DatesQueryBuilder();
+
+    private DatesQueryBuilder() {
+    }
 
     public static Builder getDateBuilder() {
         return QUERY.new Builder();
-    }
-
-    private DatesQueryBuilder() {
     }
 
     public class Builder {

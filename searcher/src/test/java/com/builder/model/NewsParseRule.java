@@ -4,7 +4,15 @@ package com.builder.model;
 import com.builder.params.annotations.CriteriaField;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  *
@@ -15,7 +23,7 @@ import javax.persistence.*;
 public class NewsParseRule {
     @Id
     @Column(name = "rule_pk")
-    @GeneratedValue(generator = "rule_seq",strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "rule_seq", strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(catalog = "sequences", name = "rule_seq",
             sequenceName = "rule_seq_pk", allocationSize = 1)
     @CriteriaField

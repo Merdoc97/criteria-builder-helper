@@ -3,23 +3,33 @@ package com.builder.jpa;
 import com.builder.CriteriaRequest;
 import com.builder.params.FieldsQueryWrap;
 import com.builder.params.OrderFields;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.criterion.MatchMode;
 import org.springframework.data.domain.Sort;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.builder.util.UtilClass.getIdField;
 
+@SuppressWarnings("checkstyle:MissingSwitchDefault")
 public class PredicateCreator {
 
     public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query) {
         var predicates = request.getConditions().stream()
                 .flatMap(conditions -> {
                     return conditions.getSearchCriteria().stream()
-                            .map(o -> criteriaBuilder.and(toPredicate(root, criteriaBuilder, new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))))
+                            .map(o -> criteriaBuilder.and(toPredicate(root, criteriaBuilder,
+                                    new FieldsQueryWrap(conditions.getProperty(), o, conditions.getCriteriaCondition(), conditions.getMatchMode()))))
                             .collect(Collectors.toList()).stream();
                 }).collect(Collectors.toList());
 
@@ -28,7 +38,8 @@ public class PredicateCreator {
         return res;
     }
 
-    public Predicate[] createPredicates(Class forClass, CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query, Set<OrderFields> orderFields) {
+    public Predicate[] createPredicates(Class forClass, CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query,
+                                        Set<OrderFields> orderFields) {
         var predicates = createPredicates(request, criteriaBuilder, root, query);
         addOrdersAndGroups(forClass, criteriaBuilder, root, query, orderFields);
         return predicates;
@@ -52,7 +63,8 @@ public class PredicateCreator {
     private Predicate toPredicate(Root root, CriteriaBuilder builder, FieldsQueryWrap fieldsQuery) {
         switch (fieldsQuery.getCriteriaCondition()) {
             case LIKE:
-                return builder.like(builder.lower(getFetch(root, fieldsQuery.getProperty()).as(String.class)), valueWithMatchMode(fieldsQuery.getMatchMode(), fieldsQuery.getSearchCriteria()));
+                return builder.like(builder.lower(getFetch(root, fieldsQuery.getProperty()).as(String.class)),
+                        valueWithMatchMode(fieldsQuery.getMatchMode(), fieldsQuery.getSearchCriteria()));
             case EQUAL:
                 return builder.and(builder.equal(getFetch(root, fieldsQuery.getProperty()), fieldsQuery.getSearchCriteria()));
             case MORE:
@@ -64,7 +76,8 @@ public class PredicateCreator {
             case IS_NULL:
                 return builder.and(builder.isNull(getFetch(root, fieldsQuery.getProperty())));
             case NOT_LIKE:
-                return builder.notLike(builder.lower(getFetch(root, fieldsQuery.getProperty()).as(String.class)), valueWithMatchMode(fieldsQuery.getMatchMode(), fieldsQuery.getSearchCriteria()));
+                return builder.notLike(builder.lower(getFetch(root, fieldsQuery.getProperty()).as(String.class)),
+                        valueWithMatchMode(fieldsQuery.getMatchMode(), fieldsQuery.getSearchCriteria()));
             case NOT_NULL:
                 return builder.and(builder.isNotNull(getFetch(root, fieldsQuery.getProperty())));
             case NOT_EQUAL:
@@ -97,17 +110,17 @@ public class PredicateCreator {
 
     private String valueWithMatchMode(MatchMode matchMode, Object value) {
         if (Objects.isNull(matchMode)) {
-            return "" + value + "";
+            return Strings.EMPTY + value + Strings.EMPTY;
         }
         switch (matchMode) {
             case ANYWHERE:
                 return "%".concat(String.valueOf(value)).concat("%");
             case END:
-                return "" + value + "%";
+                return Strings.EMPTY + value + "%";
             case EXACT:
-                return "" + value + "";
+                return Strings.EMPTY + value + Strings.EMPTY;
             default:
-                return "%" + value + "";
+                return "%" + value + Strings.EMPTY;
         }
 
     }

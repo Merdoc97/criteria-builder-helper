@@ -4,7 +4,17 @@ import com.builder.params.annotations.CriteriaField;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import java.util.List;
 
 /**
@@ -17,7 +27,7 @@ import java.util.List;
 public class NewsEntity {
     @Id
     @Column(name = "news_pk")
-    @GeneratedValue(generator = "news_seq",strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "news_seq", strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(catalog = "sequences", name = "news_seq",
             sequenceName = "news_seq_pk", allocationSize = 1)
     @CriteriaField
@@ -33,8 +43,8 @@ public class NewsEntity {
     @Column(name = "is_parsed_today")
     private Boolean isParsedToday;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
-    @JoinColumn(name = "top_name_fk",referencedColumnName = "tpname_pk",updatable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "top_name_fk", referencedColumnName = "tpname_pk", updatable = false)
     private MenuEntity menuEntity;
 
     @OneToMany(mappedBy = "newsEntity")

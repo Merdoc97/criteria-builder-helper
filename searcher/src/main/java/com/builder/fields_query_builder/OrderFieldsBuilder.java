@@ -8,12 +8,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ *
  */
-public class OrderFieldsBuilder {
-    private OrderFieldsBuilder() {
-    }
+public final class OrderFieldsBuilder {
 
     private static final OrderFieldsBuilder ORDER_FIELDS_BUILDER = new OrderFieldsBuilder();
+
+    private OrderFieldsBuilder() {
+    }
 
     public static Builder getOrderFieldBuilder() {
         return ORDER_FIELDS_BUILDER.new Builder();

@@ -50,7 +50,8 @@ public interface EntitySearcher {
      * @param <T>
      * @return same as in method {@link #getFields(Class, CriteriaRequest, String...)} but in page view
      */
-    <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields);
+    <T> Page<Map> getPage(int pageNumber, int pageLength, Class<T> forClass,
+                          @Valid CriteriaRequest request, Set<OrderFields> orderFields, String... entityFields);
 
     <T> Specification<T> createSpecification(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields);
 
