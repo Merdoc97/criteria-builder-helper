@@ -332,7 +332,7 @@ class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testWithPagination() {
+    void testWithPagination() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, ANYWHERE)
@@ -348,7 +348,7 @@ class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testSearchEntity() {
+    void testSearchEntity() {
         CriteriaRequest request = new CriteriaRequest();
         request.setConditions(new HashSet<>(Arrays.asList(
                 new FieldsQuery("articleTopic", "java", CriteriaCondition.LIKE, ANYWHERE)
@@ -384,7 +384,7 @@ class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testSimplePaging() {
+    void testSimplePaging() {
         Page<NewsBodyEntity> res = searcher.getPage(0, 10, NewsBodyEntity.class, CriteriaRequestBuilder.getRequestBuilder().build(), null);
         Assert.assertTrue(res.getContent().size() > 0);
     }
