@@ -41,7 +41,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  *
  */
 @Slf4j
-@SuppressWarnings({"checkstyle:MagicNumber", "checkstyle:UnnecessaryParentheses"})
+@SuppressWarnings({"java:S1607", "java:S5845", "checkstyle:MagicNumber", "checkstyle:UnnecessaryParentheses"})
 class EntitySearcherTest extends TestConfig {
 
     @Autowired
@@ -68,7 +68,7 @@ class EntitySearcherTest extends TestConfig {
                                         .build())
                         .build());
 
-        Assert.assertTrue("in  present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
+        Assert.assertEquals("in  present only one news topic with current condition it news with id = 1", 1, newsEntities.size());
         Assert.assertEquals(new Integer(1), newsEntities.get(0));
 
 
@@ -84,7 +84,7 @@ class EntitySearcherTest extends TestConfig {
                                         .build())
                         .build());
 
-        Assert.assertTrue("in  present only one news topic with current condition it news with id = 1", newsEntities.size() == 1);
+        Assert.assertEquals("in  present only one news topic with current condition it news with id = 1", 1, newsEntities.size());
         Assert.assertEquals(new Integer(1), newsEntities.get(0));
 
 
@@ -112,7 +112,7 @@ class EntitySearcherTest extends TestConfig {
                                         .build())
                         .build());
 
-        Assert.assertTrue(result.size() == 2);
+        Assert.assertEquals(2, result.size());
         Collections.sort(result);
         Assert.assertEquals(new Integer(1), result.get(0));
 
@@ -358,7 +358,7 @@ class EntitySearcherTest extends TestConfig {
                 OrderFieldsBuilder.getOrderFieldBuilder()
                         .addOrderField("menuName", ASC)
                         .build());
-        Assert.assertTrue(result.size() == 0);
+        Assert.assertEquals(0, result.size());
 
     }
 

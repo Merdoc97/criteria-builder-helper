@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 @Validated
 @Slf4j
 @Transactional(readOnly = true)
-@SuppressWarnings(value = {"checkstyle:MissingSwitchDefault", "checkstyle:CyclomaticComplexity"})
+@SuppressWarnings({"checkstyle:MissingSwitchDefault", "checkstyle:CyclomaticComplexity", "java:S2259", "java:S3776"})
 public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHelper {
 
     private final EntityManager entityManager;
@@ -66,7 +66,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
     }
 
     @Override
-    public final Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request) {
+    public final <T> Criteria buildCriteria(Class<T> forClass, @Valid CriteriaRequest request) {
 
         if (Objects.isNull(request)) {
             throw new IllegalArgumentException("Request shouldn't be empty");
@@ -118,7 +118,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
     }
 
     @Override
-    public final Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
+    public final <T> Criteria buildCriteria(Class<T> forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
         Criteria criteria = buildCriteria(forClass, request);
         orderFields.forEach(orderField -> {
 
@@ -133,7 +133,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         return criteria;
     }
 
-    private void buildForNonDate(Criteria criteria, Set<FieldsQuery> notDate, Class forClass) {
+    private <T> void buildForNonDate(Criteria criteria, Set<FieldsQuery> notDate, Class<T> forClass) {
         if (Objects.nonNull(notDate) && !notDate.isEmpty()) {
             notDate.forEach(fieldsQuery -> {
                 try {
@@ -157,7 +157,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         }
     }
 
-    private void buildForDate(Criteria criteria, Set<DateQuery> dateQueries, Class forClass) {
+    private <T> void buildForDate(Criteria criteria, Set<DateQuery> dateQueries, Class<T> forClass) {
         if (Objects.nonNull(dateQueries) && !dateQueries.isEmpty()) {
             dateQueries.forEach(dateQuery -> {
                 if (UtilClass.isEntityField(forClass, dateQuery.getProperty())) {
@@ -176,7 +176,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
      * @param entityCriterias wrapper for query
      * @param forClass
      */
-    private void buildForEntities(Criteria criteria, Set<FieldsQuery> entityCriterias, Set<DateQuery> dateQueries, Class forClass) {
+    private <T> void buildForEntities(Criteria criteria, Set<FieldsQuery> entityCriterias, Set<DateQuery> dateQueries, Class<T> forClass) {
 //        build for not date
         Map<String, String> aliasMap = new HashMap<>();
 
@@ -184,7 +184,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
             entityCriterias.forEach(fieldsQuery -> {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
+                    checkAndAddCriteria(aliasMap, fieldsQuery, criteria, fields);
                     List<Criterion> criterionList = new ArrayList<>();
                     for (Object searchParam : fieldsQuery.getSearchCriteria()) {
                         String[] tmp = fieldsQuery.getProperty().split("\\.");
@@ -217,7 +217,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
             dateQueries.forEach(fieldsQuery -> {
                 try {
                     String[] fields = fieldsQuery.getProperty().split("\\.");
-                    checkAndAddCriteria(aliasMap, forClass, fieldsQuery, criteria, fields);
+                    checkAndAddCriteria(aliasMap, fieldsQuery, criteria, fields);
                     criteria.add(forDateCriterion(fieldsQuery, forClass));
                 } catch (final NoSuchFieldException e) {
                     log.info("wrong request search field not found :{}", fieldsQuery);
@@ -248,7 +248,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         return aliasMap;
     }
 
-    private void checkAndAddCriteria(Map<String, String> aliasMap, Class forClass, Query fieldsQuery, Criteria criteria, String[] fields)
+    private void checkAndAddCriteria(Map<String, String> aliasMap, Query fieldsQuery, Criteria criteria, String[] fields)
             throws NoSuchFieldException {
         Map<String, String> aliases = buildAliases(fields);
 
@@ -267,7 +267,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         fieldsQuery.setProperty(withAliasParam);
     }
 
-    private Criterion forNonDates(@Valid FieldsQueryWrap query, Class forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
+    private <T> Criterion forNonDates(@Valid FieldsQueryWrap query, Class<T> forClass, String path) throws NoSuchFieldException, ClassNotFoundException {
         switch (query.getCriteriaCondition()) {
             case EQUAL:
                 return Restrictions.eq(query.getProperty(), query.getSearchCriteria());
@@ -315,7 +315,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         throw new IllegalArgumentException("unknown condition for query");
     }
 
-    private Criterion forDateCriterion(@Valid DateQuery dateQuery, Class forClass) {
+    private <T> Criterion forDateCriterion(@Valid DateQuery dateQuery, Class<T> forClass) {
         switch (dateQuery.getCriteriaCondition()) {
             case BETWEEN:
                 if (Objects.isNull(dateQuery.getSecondSearchParam())) {
@@ -335,7 +335,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         }
     }
 
-    private Object getSameDateType(Class forClass, DateQuery dateQuery) {
+    private <T> Object getSameDateType(Class<T> forClass, DateQuery dateQuery) {
 
         Field field = getField(forClass, dateQuery.getProperty());
         if (field.getType().isAssignableFrom(ZonedDateTime.class)) {
@@ -349,7 +349,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
 
     }
 
-    private Object getSameDateTypeSecondParam(Class forClass, DateQuery dateQuery) {
+    private <T> Object getSameDateTypeSecondParam(Class<T> forClass, DateQuery dateQuery) {
 
         Field field = getField(forClass, dateQuery.getProperty());
         if (field.getType().isAssignableFrom(ZonedDateTime.class)) {
@@ -363,11 +363,11 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
 
     }
 
-    private Field getField(Class forClass, String property) {
+    private <T> Field getField(Class<T> forClass, String property) {
         Field field = null;
 
         if (UtilClass.isEntityField(forClass, property)) {
-            Class childClass = getChildClass(forClass, property.split("\\.")[0]);
+            Class<T> childClass = getChildClass(forClass, property.split("\\.")[0]);
             field = ReflectionUtils.findField(childClass, property.split("\\.")[1]);
         } else {
             field = ReflectionUtils.findField(forClass, property);
@@ -380,11 +380,11 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
     }
 
     //    is like true build for lie else for not like
-    private Criterion likeForInt(Class forClass, String property, Object value, boolean isLike, MatchMode matchMode)
+    private <T> Criterion likeForInt(Class<T> forClass, String property, Object value, boolean isLike, MatchMode matchMode)
             throws NoSuchFieldException {
         String operand = isLike ? Strings.EMPTY : " not";
         if (UtilClass.isEntityField(forClass, property)) {
-            Class child = getChildClass(forClass, property.split("\\.")[0]);
+            Class<T> child = getChildClass(forClass, property.split("\\.")[0]);
             Field field = child.getDeclaredField(property.split("\\.")[1]);
             return Restrictions.sqlRestriction(
                     "cast(" + field.getDeclaredAnnotation(Column.class).name() + " as text)" + operand + " like " + valueWithMatchMode(matchMode, value));

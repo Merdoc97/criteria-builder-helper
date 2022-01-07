@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @AllArgsConstructor
 @Validated
+@SuppressWarnings("java:S3740")
 public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements EntitySearcher {
 
     private static final int MAX_RESULT_FOR_IN = 10000;
@@ -53,20 +54,20 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
-        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, orderFields));
+        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, orderFields));
         return getPage(pageNumber, pageLength, query, forClass);
     }
 
     @Override
     public <T> T findEntity(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
+            TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
             Page<T> result = getPage(0, 1, query, forClass);
             if (!result.getContent().isEmpty()) {
                 return result.getContent().get(0);
             }
         }
-        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
+        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
         Page<T> result = getPage(0, 1, query, forClass);
         if (!result.getContent().isEmpty()) {
             return result.getContent().get(0);
@@ -78,7 +79,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> List getForIn(Class<T> forClass, String entityField, @Valid CriteriaRequest request) {
-        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
+        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
 
         ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
                 .setMaxResults(MAX_RESULT_FOR_IN)

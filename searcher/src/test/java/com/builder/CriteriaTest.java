@@ -48,7 +48,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  *
  */
 @Transactional
-@SuppressWarnings("checkstyle:MagicNumber")
+@SuppressWarnings({"checkstyle:MagicNumber", "java:S5778"})
 class CriteriaTest extends TestConfig {
 
     private CriteriaHelper helper;
@@ -245,7 +245,7 @@ class CriteriaTest extends TestConfig {
                 new FieldsQuery("articleTopic", LocalDate.now(), CriteriaCondition.LIKE, ANYWHERE)
         )));
         List<NewsEntity> result = helper.buildCriteria(NewsEntity.class, request).list();
-        Assert.assertTrue(result.size() == 0);
+        Assert.assertEquals(0, result.size());
     }
 
     @Test
@@ -342,7 +342,7 @@ class CriteriaTest extends TestConfig {
 
         Page<NewsEntity> criteria = searcher.getPage(0, 10, NewsEntity.class, request, null);
         Assert.assertTrue(criteria.getContent().size() > 0);
-        Assert.assertEquals(criteria.getTotalPages(), 2);
+        Assert.assertEquals(2, criteria.getTotalPages());
 
     }
 

@@ -16,7 +16,7 @@ import java.util.Arrays;
 @SuppressWarnings("checkstyle:UnnecessaryParentheses")
 public abstract class FetchModeModifier {
 
-    protected void changeFetchMode(Class forClass, FetchMode fetchMode, Criteria criteria) {
+    protected <T> void changeFetchMode(Class<T> forClass, FetchMode fetchMode, Criteria criteria) {
         Arrays.stream(forClass.getDeclaredFields())
                 .forEach(field -> {
                     try {
@@ -32,7 +32,7 @@ public abstract class FetchModeModifier {
 
     }
 
-    protected void changeChildFetchMode(Class entityClass, String property, FetchMode fetchMode, Criteria criteria)
+    protected <T> void changeChildFetchMode(Class<T> entityClass, String property, FetchMode fetchMode, Criteria criteria)
             throws NoSuchFieldException, ClassNotFoundException {
 
         Class childClass = getChildClass(entityClass, property);

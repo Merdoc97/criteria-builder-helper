@@ -14,9 +14,12 @@ import java.util.Objects;
  */
 @Slf4j
 public class DateFieldValidator implements ConstraintValidator<DateField, Object> {
+
+    private static final String EXCEPTION_IN_CLASS_IN_METHOD_WITH_EXCEPTION = "Exception in {} class in {} method with exception: ";
+
     @Override
     public void initialize(DateField constraintAnnotation) {
-
+        throw new UnsupportedOperationException("initialize method not supported");
     }
 
     @Override
@@ -24,7 +27,7 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
         if (Objects.isNull(value)) {
             return true;
         }
-        return tryForLocalDate(value) & tryForLocalDateTime(value) & tryForZoneDateTimeDateTime(value);
+        return tryForLocalDate(value) && tryForLocalDateTime(value) && tryForZoneDateTimeDateTime(value);
     }
 
     private boolean tryForLocalDate(Object value) {
@@ -34,7 +37,7 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
                 return true;
             }
         } catch (final Exception e) {
-            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForLocalDate", e);
+            log.debug(EXCEPTION_IN_CLASS_IN_METHOD_WITH_EXCEPTION, this.getClass().getSimpleName(), "tryForLocalDate", e);
         }
         return false;
     }
@@ -46,7 +49,7 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
                 return true;
             }
         } catch (final Exception e) {
-            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForLocalDateTime", e);
+            log.debug(EXCEPTION_IN_CLASS_IN_METHOD_WITH_EXCEPTION, this.getClass().getSimpleName(), "tryForLocalDateTime", e);
         }
         return false;
     }
@@ -58,7 +61,7 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
                 return true;
             }
         } catch (final Exception e) {
-            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForZoneDateTimeDateTime", e);
+            log.debug(EXCEPTION_IN_CLASS_IN_METHOD_WITH_EXCEPTION, this.getClass().getSimpleName(), "tryForZoneDateTimeDateTime", e);
         }
         return false;
     }

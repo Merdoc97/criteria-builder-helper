@@ -13,14 +13,13 @@ public interface CriteriaQueryBuilder {
      * @param request  - set of fields with predictable request which can include inner entity with point syntax
      * @return - build criteria for search request
      */
-    CriteriaQuery buildCriteria(Class forClass, @Valid CriteriaRequest request);
+    <T> CriteriaQuery<T> buildCriteria(Class<T> forClass, @Valid CriteriaRequest request);
 
     /**
-     *
-     * @param forClass - root entity class for request
-     * @param request - set of fields with predictable request which can include inner entity with point syntax
+     * @param forClass    - root entity class for request
+     * @param request     - set of fields with predictable request which can include inner entity with point syntax
      * @param orderFields - sorting fields
      * @return - build criteria for search request
      */
-    CriteriaQuery buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
+    <T> CriteriaQuery<T> buildCriteria(Class<T> forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
 }

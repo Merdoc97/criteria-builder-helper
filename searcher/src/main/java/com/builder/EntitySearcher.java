@@ -13,6 +13,7 @@ import java.util.Set;
 /**
  *
  */
+@SuppressWarnings("java:S3740")
 public interface EntitySearcher {
 
     <T> List<T> getList(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields);

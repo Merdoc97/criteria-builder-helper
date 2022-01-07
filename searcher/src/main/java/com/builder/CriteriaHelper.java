@@ -18,7 +18,7 @@ public interface CriteriaHelper {
      * @param request  - set of fields with predictable request which can include inner entity with point syntax
      * @return - build criteria for search request
      */
-    Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request);
+    <T> Criteria buildCriteria(Class<T> forClass, @Valid CriteriaRequest request);
 
     /**
      * @param forClass    - root entity class for request
@@ -26,5 +26,5 @@ public interface CriteriaHelper {
      * @param orderFields - sorting fields
      * @return - build criteria for search request
      */
-    Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
+    <T> Criteria buildCriteria(Class<T> forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
 }

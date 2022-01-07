@@ -17,12 +17,12 @@ public class FieldForNotDateValidator implements ConstraintValidator<NotDateFiel
 
     @Override
     public void initialize(NotDateField constraintAnnotation) {
-
+        throw new UnsupportedOperationException("initialize method not supported");
     }
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
-        return tryForLocalDate(value) & tryForLocalDateTime(value) & tryForZoneDateTimeDateTime(value);
+        return tryForLocalDate(value) && tryForLocalDateTime(value) && tryForZoneDateTimeDateTime(value);
     }
 
     private boolean tryForLocalDate(Object value) {
