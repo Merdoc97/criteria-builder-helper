@@ -4,7 +4,12 @@ import com.builder.params.annotations.CriteriaField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
 /**
@@ -34,7 +39,7 @@ public class NewsBodyEntity {
     private Integer newsFk;
 
     @ManyToOne
-    @JoinColumn(name = "news_fk",insertable = false,updatable = false)
+    @JoinColumn(name = "news_fk", insertable = false, updatable = false)
     private NewsEntity newsEntity;
 
 }

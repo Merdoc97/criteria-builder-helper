@@ -10,7 +10,7 @@ import java.util.Arrays;
 import static com.builder.util.UtilClass.isEntityField;
 
 /**
-
+ *
  */
 @Slf4j
 public abstract class JpaFetchModeModifier extends FetchModeModifier {
@@ -22,7 +22,7 @@ public abstract class JpaFetchModeModifier extends FetchModeModifier {
                         if (isEntityField(forClass, field.getName())) {
                             changeChildFetchMode(forClass, field.getName(), fetchMode, criteria);
                         }
-                    } catch (NoSuchFieldException | ClassNotFoundException e) {
+                    } catch (final NoSuchFieldException | ClassNotFoundException e) {
                         log.warn("field not present in entity: {}", forClass.getSimpleName());
                         throw new IllegalArgumentException("field not present in entity:".concat(forClass.getSimpleName()));
                     }

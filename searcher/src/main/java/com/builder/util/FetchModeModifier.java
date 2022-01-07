@@ -13,6 +13,7 @@ import java.util.Arrays;
  * current class changed dynamically fetch mode for entities
  */
 @Slf4j
+@SuppressWarnings("checkstyle:UnnecessaryParentheses")
 public abstract class FetchModeModifier {
 
     protected void changeFetchMode(Class forClass, FetchMode fetchMode, Criteria criteria) {
@@ -23,7 +24,7 @@ public abstract class FetchModeModifier {
 //                            change all child entities to lazy instead of conflicts
                             changeChildFetchMode(forClass, field.getName(), fetchMode, criteria);
                         }
-                    } catch (NoSuchFieldException | ClassNotFoundException e) {
+                    } catch (final NoSuchFieldException | ClassNotFoundException e) {
                         log.warn("field not present in entity: {}", forClass.getSimpleName());
                         throw new IllegalArgumentException("field not present in entity:".concat(forClass.getSimpleName()));
                     }
@@ -31,7 +32,8 @@ public abstract class FetchModeModifier {
 
     }
 
-    protected void changeChildFetchMode(Class entityClass, String property, FetchMode fetchMode, Criteria criteria) throws NoSuchFieldException, ClassNotFoundException {
+    protected void changeChildFetchMode(Class entityClass, String property, FetchMode fetchMode, Criteria criteria)
+            throws NoSuchFieldException, ClassNotFoundException {
 
         Class childClass = getChildClass(entityClass, property);
         Arrays.stream(childClass.getDeclaredFields())
@@ -59,7 +61,7 @@ public abstract class FetchModeModifier {
                 String className = ReflectionUtils.findField(forClass, property).getType().getTypeName();
                 return this.getClass().getClassLoader().loadClass(className);
             }
-        } catch (ClassNotFoundException | NoSuchFieldException e) {
+        } catch (final ClassNotFoundException | NoSuchFieldException e) {
             throw new RequestFieldNotPresent("field not found :" + property);
         }
     }

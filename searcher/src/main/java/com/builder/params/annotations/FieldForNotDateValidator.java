@@ -1,5 +1,7 @@
 package com.builder.params.annotations;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
@@ -10,6 +12,7 @@ import java.util.Objects;
 /**
  * .
  */
+@Slf4j
 public class FieldForNotDateValidator implements ConstraintValidator<NotDateField, Object> {
 
     @Override
@@ -28,8 +31,8 @@ public class FieldForNotDateValidator implements ConstraintValidator<NotDateFiel
             if (Objects.nonNull(localDate)) {
                 return false;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: {}", this.getClass().getSimpleName(), "tryForLocalDate", e);
         }
         return true;
     }
@@ -40,8 +43,8 @@ public class FieldForNotDateValidator implements ConstraintValidator<NotDateFiel
             if (Objects.nonNull(localDate)) {
                 return false;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: {}", this.getClass().getSimpleName(), "tryForLocalDateTime", e);
         }
         return true;
     }
@@ -52,8 +55,8 @@ public class FieldForNotDateValidator implements ConstraintValidator<NotDateFiel
             if (Objects.nonNull(localDate)) {
                 return false;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForZoneDateTimeDateTime", e);
         }
         return true;
     }

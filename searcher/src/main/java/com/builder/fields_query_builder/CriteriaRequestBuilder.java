@@ -4,23 +4,23 @@ package com.builder.fields_query_builder;
 import com.builder.CriteriaRequest;
 import com.builder.params.DateQuery;
 import com.builder.params.FieldsQuery;
+import lombok.experimental.UtilityClass;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
+ *
  */
-public class CriteriaRequestBuilder {
-    private static final CriteriaRequestBuilder BUILDER = new CriteriaRequestBuilder();
+@UtilityClass
+@SuppressWarnings("checkstyle:HideUtilityClassConstructor")
+public final class CriteriaRequestBuilder {
 
     public static Builder getRequestBuilder() {
-        return BUILDER.new Builder();
+        return new Builder();
     }
 
-    private CriteriaRequestBuilder() {
-    }
-
-    public class Builder {
+    public static class Builder {
         private final Set<FieldsQuery> conditions;
         private final Set<DateQuery> dateConditions;
 

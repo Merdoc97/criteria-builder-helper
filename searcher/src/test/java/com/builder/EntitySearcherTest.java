@@ -5,9 +5,14 @@ import com.builder.config.TestConfig;
 import com.builder.fields_query_builder.CriteriaRequestBuilder;
 import com.builder.fields_query_builder.FieldsQueryBuilder;
 import com.builder.fields_query_builder.OrderFieldsBuilder;
-import com.builder.model.*;
+import com.builder.model.MenuEntity;
+import com.builder.model.NewsBodyEntity;
+import com.builder.model.NewsBodyRepository;
+import com.builder.model.NewsEntity;
+import com.builder.model.NewsRepository;
 import com.builder.util.UtilClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.assertj.core.api.Assertions;
 import org.hibernate.criterion.MatchMode;
 import org.junit.Assert;
@@ -36,6 +41,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  *
  */
 @Slf4j
+@SuppressWarnings({"checkstyle:MagicNumber", "checkstyle:UnnecessaryParentheses"})
 class EntitySearcherTest extends TestConfig {
 
     @Autowired
@@ -90,9 +96,7 @@ class EntitySearcherTest extends TestConfig {
             query.distinct(true);
             return builder.and(builder.like(builder.lower(((Join) root.fetch("bodyEntity", JoinType.LEFT)).get("articleName")), "%java%"));
         });
-        specification.and((root, query, builder) -> {
-            return (builder.and(builder.like(builder.lower(root.get("articleTopic")), "%java%")));
-        });
+        specification.and((root, query, builder) -> (builder.and(builder.like(builder.lower(root.get("articleTopic")), "%java%"))));
         List<NewsEntity> result = newsRepository.findAll(specification);
         Assert.assertEquals(2, result.size());
         Assert.assertEquals(14, result.stream().findFirst().get().getBodyEntity().size());
@@ -149,7 +153,6 @@ class EntitySearcherTest extends TestConfig {
         List<Map> result = searcher.getFields(NewsBodyEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
                                 FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                         .addField("newsEntity.menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
                                         .build())
                         .build(), "articleLink", "articleName", "newsEntity.articleTopic");
@@ -169,7 +172,6 @@ class EntitySearcherTest extends TestConfig {
         List<Map> result = jpaSearcher.getFields(NewsBodyEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
                                 FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                         .addField("newsEntity.menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
                                         .build())
                         .build(), "articleLink", "articleName", "newsEntity.articleTopic");
@@ -256,7 +258,6 @@ class EntitySearcherTest extends TestConfig {
         Page<Map> result = searcher.getPage(0, 10, NewsBodyEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
                                 FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                         .addField("newsEntity.menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
                                         .build())
                         .build(),
@@ -316,7 +317,6 @@ class EntitySearcherTest extends TestConfig {
         List<NewsBodyEntity> result = searcher.getList(NewsBodyEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
                                 FieldsQueryBuilder.getFieldsBuilder()
-//                                .addField("news.id", "", NOT_NULL, null)
                                         .addField("newsEntity.menuEntity.menuName", "general", CriteriaCondition.LIKE, MatchMode.ANYWHERE)
                                         .build())
                         .build(),
@@ -332,7 +332,8 @@ class EntitySearcherTest extends TestConfig {
     void testNotNUllSpecification() {
         Specification specification = Specification.where((root, query, builder) -> {
             query.distinct(true);
-            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity", JoinType.LEFT)).get("menuName")), "%general%"));
+            return builder.and(builder.like(builder.lower(((Join) root.fetch("newsEntity", JoinType.LEFT).fetch("menuEntity", JoinType.LEFT)).get("menuName")),
+                    "%general%"));
         });
         List<NewsEntity> result = newsBodyRepository.findAll(specification);
         Assert.assertTrue(result.size() > 0);
@@ -351,7 +352,7 @@ class EntitySearcherTest extends TestConfig {
         List<MenuEntity> result = searcher.getList(MenuEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(
                                 FieldsQueryBuilder.getFieldsBuilder()
-                                        .addField("news.id", "", CriteriaCondition.IS_NULL, null)
+                                        .addField("news.id", Strings.EMPTY, CriteriaCondition.IS_NULL, null)
                                         .build())
                         .build(),
                 OrderFieldsBuilder.getOrderFieldBuilder()

@@ -1,5 +1,7 @@
 package com.builder.params.annotations;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
@@ -10,6 +12,7 @@ import java.util.Objects;
 /**
  *
  */
+@Slf4j
 public class DateFieldValidator implements ConstraintValidator<DateField, Object> {
     @Override
     public void initialize(DateField constraintAnnotation) {
@@ -30,8 +33,8 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
             if (Objects.nonNull(localDate)) {
                 return true;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForLocalDate", e);
         }
         return false;
     }
@@ -42,8 +45,8 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
             if (Objects.nonNull(localDate)) {
                 return true;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForLocalDateTime", e);
         }
         return false;
     }
@@ -54,8 +57,8 @@ public class DateFieldValidator implements ConstraintValidator<DateField, Object
             if (Objects.nonNull(localDate)) {
                 return true;
             }
-        } catch (Exception e) {
-
+        } catch (final Exception e) {
+            log.debug("Exception in {} class in {} method with exception: ", this.getClass().getSimpleName(), "tryForZoneDateTimeDateTime", e);
         }
         return false;
     }

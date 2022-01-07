@@ -14,6 +14,7 @@ import com.builder.model.NewsParseRule;
 import com.builder.params.DateQuery;
 import com.builder.params.FieldsQuery;
 import com.builder.params.OrderFields;
+import org.assertj.core.api.Assertions;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.exception.SQLGrammarException;
@@ -39,7 +40,7 @@ import java.util.Set;
 
 import static org.hibernate.criterion.MatchMode.ANYWHERE;
 import static org.hibernate.criterion.MatchMode.EXACT;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -47,6 +48,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  *
  */
 @Transactional
+@SuppressWarnings("checkstyle:MagicNumber")
 class CriteriaTest extends TestConfig {
 
     private CriteriaHelper helper;
@@ -73,7 +75,7 @@ class CriteriaTest extends TestConfig {
                 new FieldsQuery("newsId", 2, CriteriaCondition.EQUAL, MatchMode.START))));
         Criteria criteria = helper.buildCriteria(NewsParseRule.class, request);
         List<NewsParseRule> result = criteria.list();
-        Assert.assertTrue(result.size() > 0);
+        Assertions.assertThat(result.size()).isGreaterThan(0);
     }
 
     @Test
@@ -92,7 +94,7 @@ class CriteriaTest extends TestConfig {
 
         query.select(root).where(specification);
         List<NewsParseRule> result = entityManager.createQuery(query).getResultList();
-        Assert.assertTrue(result.size() > 0);
+        Assertions.assertThat(result.size()).isGreaterThan(0);
     }
 
 
@@ -103,7 +105,7 @@ class CriteriaTest extends TestConfig {
                 new DateQuery("articleDate", LocalDate.parse("2017-03-16"), null, CriteriaDateCondition.MORE))));
         Criteria criteria = helper.buildCriteria(NewsBodyEntity.class, request);
         List<NewsBodyEntity> result = criteria.list();
-        Assert.assertTrue(result.size() > 0);
+        Assertions.assertThat(result.size()).isGreaterThan(0);
 
     }
 
@@ -172,7 +174,7 @@ class CriteriaTest extends TestConfig {
         Criteria criteria = helper.buildCriteria(NewsEntity.class, request);
 
         List<NewsEntity> result = criteria.list();
-        Assert.assertTrue(result.size() == 0);
+        Assertions.assertThat(result.size()).isEqualTo(0);
     }
 
     @Test
@@ -232,7 +234,7 @@ class CriteriaTest extends TestConfig {
         request.setConditions(Set.of(
                 new FieldsQuery("articleTopic", "2017-03-17", null, ANYWHERE)
         ));
-        assertThrows(ConstraintViolationException.class,()->searcher.getList(NewsEntity.class, request,Set.of()));
+        assertThrows(ConstraintViolationException.class, () -> searcher.getList(NewsEntity.class, request, Set.of()));
 
     }
 
@@ -254,7 +256,7 @@ class CriteriaTest extends TestConfig {
                 new FieldsQuery("articleName", LocalDate.now(), CriteriaCondition.LIKE, ANYWHERE))));
         try {
             helper.buildCriteria(NewsParseRule.class, request);
-        } catch (javax.validation.ConstraintViolationException e) {
+        } catch (final javax.validation.ConstraintViolationException e) {
             Assert.assertEquals("date field not allowed", e.getConstraintViolations().stream().findFirst().get().getMessage());
         }
     }
@@ -276,7 +278,7 @@ class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        HashSet<OrderFields> orderFields = new HashSet<>(
+        Set<OrderFields> orderFields = new HashSet<>(
                 Arrays.asList(new OrderFields("articleTopic", ASC))
         );
 
@@ -309,7 +311,7 @@ class CriteriaTest extends TestConfig {
                 new DateQuery("bodyEntity.articleDate", LocalDate.parse("2017-03-17"), null, CriteriaDateCondition.EQUAL)
         )));
 
-        HashSet<OrderFields> orderFields = new HashSet<>(
+        Set<OrderFields> orderFields = new HashSet<>(
                 Arrays.asList(new OrderFields("articleTopic", ASC),
                         new OrderFields("menuEntity.id", DESC),
                         new OrderFields("bodyEntity.articleName", ASC),
@@ -361,7 +363,7 @@ class CriteriaTest extends TestConfig {
     }
 
     @Test
-    public void testSearchEntityWithSorting() {
+    void testSearchEntityWithSorting() {
 
         Page<NewsBodyEntity> newsEntities = searcher.getPage(0, 10, NewsBodyEntity.class,
                 CriteriaRequestBuilder.getRequestBuilder().addFieldQuery(

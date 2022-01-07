@@ -14,11 +14,12 @@ import java.util.Set;
  *
  */
 
-public class FieldsQueryBuilder {
-
-    private FieldsQueryBuilder (){}
+public final class FieldsQueryBuilder {
 
     private static final FieldsQueryBuilder QUERY = new FieldsQueryBuilder();
+
+    private FieldsQueryBuilder() {
+    }
 
     public static Builder getFieldsBuilder() {
         return QUERY.new Builder();
@@ -32,20 +33,21 @@ public class FieldsQueryBuilder {
         }
 
         public Builder addField(String property, Object searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
-            if (searchCriteria instanceof List){
-                List<Object>list= (List<Object>) searchCriteria;
-                addField(property,list,criteriaCondition,matchMode);
+            if (searchCriteria instanceof List) {
+                List<Object> list = (List<Object>) searchCriteria;
+                addField(property, list, criteriaCondition, matchMode);
                 return this;
             }
             fieldsQueries.add(new FieldsQuery(property, Arrays.asList(searchCriteria), criteriaCondition, matchMode));
             return this;
         }
+
         public Builder addField(String property, List<Object> searchCriteria, CriteriaCondition criteriaCondition, MatchMode matchMode) {
             fieldsQueries.add(new FieldsQuery(property, searchCriteria, criteriaCondition, matchMode));
             return this;
         }
 
-        public Builder addField(FieldsQuery fieldsQuery){
+        public Builder addField(FieldsQuery fieldsQuery) {
             fieldsQueries.add(fieldsQuery);
             return this;
         }
