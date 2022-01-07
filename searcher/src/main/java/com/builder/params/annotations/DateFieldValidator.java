@@ -13,13 +13,13 @@ import java.util.Objects;
  *
  */
 @Slf4j
+@SuppressWarnings("java:S1186")
 public class DateFieldValidator implements ConstraintValidator<DateField, Object> {
 
     private static final String EXCEPTION_IN_CLASS_IN_METHOD_WITH_EXCEPTION = "Exception in {} class in {} method with exception: ";
 
     @Override
     public void initialize(DateField constraintAnnotation) {
-        throw new UnsupportedOperationException("initialize method not supported");
     }
 
     @Override

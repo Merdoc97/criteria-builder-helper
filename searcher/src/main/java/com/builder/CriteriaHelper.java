@@ -11,6 +11,7 @@ import java.util.Set;
  * helper to build dynamic query for ALL TO ALL SEARCH with n+1 strategy
  * -- restrictions like doesn't work for numbers if you wan't use
  */
+@SuppressWarnings("java:S3740")
 public interface CriteriaHelper {
 
     /**
@@ -18,7 +19,7 @@ public interface CriteriaHelper {
      * @param request  - set of fields with predictable request which can include inner entity with point syntax
      * @return - build criteria for search request
      */
-    <T> Criteria buildCriteria(Class<T> forClass, @Valid CriteriaRequest request);
+    Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request);
 
     /**
      * @param forClass    - root entity class for request
@@ -26,5 +27,5 @@ public interface CriteriaHelper {
      * @param orderFields - sorting fields
      * @return - build criteria for search request
      */
-    <T> Criteria buildCriteria(Class<T> forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
+    Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields);
 }

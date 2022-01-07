@@ -13,6 +13,7 @@ import static com.builder.util.UtilClass.isEntityField;
  *
  */
 @Slf4j
+@SuppressWarnings("java:S3740")
 public abstract class JpaFetchModeModifier extends FetchModeModifier {
 
     protected void changeFetchMode(Class forClass, JoinType fetchMode, Root criteria) {

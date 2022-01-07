@@ -30,7 +30,7 @@ import static java.util.Objects.isNull;
  *
  */
 @Slf4j
-@SuppressWarnings({"checkstyle:UnnecessaryParentheses", "checkstyle:BooleanExpressionComplexity"})
+@SuppressWarnings({"java:S3740", "java:S3011", "java:S2259", "checkstyle:UnnecessaryParentheses", "checkstyle:BooleanExpressionComplexity"})
 public final class UtilClass {
 
     private UtilClass() {

@@ -24,6 +24,7 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Validated
+@SuppressWarnings("java:S3740")
 public class FieldsQuery implements Query {
     /**
      * field name from entity

@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 
 import static com.builder.util.UtilClass.getIdField;
 
-@SuppressWarnings("checkstyle:MissingSwitchDefault")
+@SuppressWarnings({"java:S3740", "checkstyle:MissingSwitchDefault"})
 public class PredicateCreator {
 
-    public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query) {
+    public Predicate[] createPredicates(CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root) {
         var predicates = request.getConditions().stream()
                 .flatMap(conditions -> {
                     return conditions.getSearchCriteria().stream()
@@ -40,7 +40,7 @@ public class PredicateCreator {
 
     public Predicate[] createPredicates(Class forClass, CriteriaRequest request, CriteriaBuilder criteriaBuilder, Root root, CriteriaQuery query,
                                         Set<OrderFields> orderFields) {
-        var predicates = createPredicates(request, criteriaBuilder, root, query);
+        var predicates = createPredicates(request, criteriaBuilder, root);
         addOrdersAndGroups(forClass, criteriaBuilder, root, query, orderFields);
         return predicates;
     }

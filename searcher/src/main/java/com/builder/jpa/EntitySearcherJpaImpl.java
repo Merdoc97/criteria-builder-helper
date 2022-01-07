@@ -54,20 +54,20 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> Page<T> getPage(int pageNumber, int pageLength, Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
-        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, orderFields));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, orderFields));
         return getPage(pageNumber, pageLength, query, forClass);
     }
 
     @Override
     public <T> T findEntity(Class<T> forClass, @Valid CriteriaRequest request, Set<OrderFields> orderFields) {
         if (Objects.isNull(orderFields) || orderFields.isEmpty()) {
-            TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
+            TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
             Page<T> result = getPage(0, 1, query, forClass);
             if (!result.getContent().isEmpty()) {
                 return result.getContent().get(0);
             }
         }
-        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
         Page<T> result = getPage(0, 1, query, forClass);
         if (!result.getContent().isEmpty()) {
             return result.getContent().get(0);
@@ -79,7 +79,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
 
     @Override
     public <T> List getForIn(Class<T> forClass, String entityField, @Valid CriteriaRequest request) {
-        TypedQuery<T> query = entityManager.createQuery(createQuery(forClass, request, null));
+        TypedQuery query = entityManager.createQuery(createQuery(forClass, request, null));
 
         ScrollableResults results = ((CriteriaQueryTypeQueryAdapter) query)
                 .setMaxResults(MAX_RESULT_FOR_IN)
@@ -124,7 +124,7 @@ public class EntitySearcherJpaImpl extends JpaFetchModeModifier implements Entit
         CriteriaQuery<T> query = builder.createQuery(forClass);
 
         Root<T> root = query.from(forClass);
-        Predicate[] predicates = predicateCreator.createPredicates(request, builder, root, query);
+        Predicate[] predicates = predicateCreator.createPredicates(request, builder, root);
         query.where(predicates);
 
         if (Objects.nonNull(orderFields) && !orderFields.isEmpty()) {

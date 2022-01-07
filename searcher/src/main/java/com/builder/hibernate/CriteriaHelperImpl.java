@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 @Validated
 @Slf4j
 @Transactional(readOnly = true)
-@SuppressWarnings({"checkstyle:MissingSwitchDefault", "checkstyle:CyclomaticComplexity", "java:S2259", "java:S3776"})
+@SuppressWarnings({"java:S3740", "checkstyle:MissingSwitchDefault", "checkstyle:CyclomaticComplexity", "java:S2259", "java:S3776"})
 public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHelper {
 
     private final EntityManager entityManager;
@@ -66,7 +66,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
     }
 
     @Override
-    public final <T> Criteria buildCriteria(Class<T> forClass, @Valid CriteriaRequest request) {
+    public final Criteria buildCriteria(Class forClass, @Valid CriteriaRequest request) {
 
         if (Objects.isNull(request)) {
             throw new IllegalArgumentException("Request shouldn't be empty");
@@ -118,7 +118,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
     }
 
     @Override
-    public final <T> Criteria buildCriteria(Class<T> forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
+    public final Criteria buildCriteria(Class forClass, CriteriaRequest request, @Valid Set<OrderFields> orderFields) {
         Criteria criteria = buildCriteria(forClass, request);
         orderFields.forEach(orderField -> {
 
@@ -133,7 +133,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         return criteria;
     }
 
-    private <T> void buildForNonDate(Criteria criteria, Set<FieldsQuery> notDate, Class<T> forClass) {
+    private void buildForNonDate(Criteria criteria, Set<FieldsQuery> notDate, Class forClass) {
         if (Objects.nonNull(notDate) && !notDate.isEmpty()) {
             notDate.forEach(fieldsQuery -> {
                 try {
@@ -157,7 +157,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
         }
     }
 
-    private <T> void buildForDate(Criteria criteria, Set<DateQuery> dateQueries, Class<T> forClass) {
+    private void buildForDate(Criteria criteria, Set<DateQuery> dateQueries, Class forClass) {
         if (Objects.nonNull(dateQueries) && !dateQueries.isEmpty()) {
             dateQueries.forEach(dateQuery -> {
                 if (UtilClass.isEntityField(forClass, dateQuery.getProperty())) {
@@ -176,7 +176,7 @@ public class CriteriaHelperImpl extends FetchModeModifier implements CriteriaHel
      * @param entityCriterias wrapper for query
      * @param forClass
      */
-    private <T> void buildForEntities(Criteria criteria, Set<FieldsQuery> entityCriterias, Set<DateQuery> dateQueries, Class<T> forClass) {
+    private void buildForEntities(Criteria criteria, Set<FieldsQuery> entityCriterias, Set<DateQuery> dateQueries, Class forClass) {
 //        build for not date
         Map<String, String> aliasMap = new HashMap<>();
 

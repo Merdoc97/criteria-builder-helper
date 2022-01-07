@@ -30,6 +30,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
@@ -84,13 +85,13 @@ class CriteriaTest extends TestConfig {
         CriteriaQuery<NewsParseRule> query = builder.createQuery(NewsParseRule.class);
         Root<NewsParseRule> root = query.from(NewsParseRule.class);
         PredicateCreator predicateCreator = new PredicateCreator();
-        javax.persistence.criteria.Predicate[] specification = predicateCreator.createPredicates(CriteriaRequestBuilder.getRequestBuilder()
+        Predicate[] specification = predicateCreator.createPredicates(CriteriaRequestBuilder.getRequestBuilder()
                 .addFieldQuery(FieldsQueryBuilder.getFieldsBuilder()
                         .addField("articleName", ".post", CriteriaCondition.LIKE, ANYWHERE)
                         .addField("newsId", 1, CriteriaCondition.NOT_LIKE, ANYWHERE)
                         .addField("newsId", 2, CriteriaCondition.EQUAL, MatchMode.START)
                         .build())
-                .build(), builder, root, query);
+                .build(), builder, root);
 
         query.select(root).where(specification);
         List<NewsParseRule> result = entityManager.createQuery(query).getResultList();

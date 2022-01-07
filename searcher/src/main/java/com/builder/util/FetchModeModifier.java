@@ -13,7 +13,7 @@ import java.util.Arrays;
  * current class changed dynamically fetch mode for entities
  */
 @Slf4j
-@SuppressWarnings("checkstyle:UnnecessaryParentheses")
+@SuppressWarnings({"java:S2259", "java:S3740", "checkstyle:UnnecessaryParentheses"})
 public abstract class FetchModeModifier {
 
     protected <T> void changeFetchMode(Class<T> forClass, FetchMode fetchMode, Criteria criteria) {

@@ -13,11 +13,11 @@ import java.util.Objects;
  * .
  */
 @Slf4j
+@SuppressWarnings("java:S1186")
 public class FieldForNotDateValidator implements ConstraintValidator<NotDateField, Object> {
 
     @Override
     public void initialize(NotDateField constraintAnnotation) {
-        throw new UnsupportedOperationException("initialize method not supported");
     }
 
     @Override
