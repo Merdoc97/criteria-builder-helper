@@ -16,6 +16,18 @@
     <properties>
         <maven.checkstyle.plugin.version>3.1.2</maven.checkstyle.plugin.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <url>http://nexus-nexus-repository-manager:8082/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>http://nexus-nexus-repository-manager:8082/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
