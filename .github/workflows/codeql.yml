@@ -33,7 +33,7 @@ jobs:
         id: trivy-scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: quay.io/keycloak/keycloak:17.0.0-legacy
+          image-ref: adoptopenjdk/openjdk11:jre11u-2022-02-11-03-47-beta-nightly
           format: 'sarif'
           exit-code: '1'
           ignore-unfixed: true
