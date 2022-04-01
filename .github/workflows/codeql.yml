@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Run Trivy vulnerability scanner
         id: trivy-scan
-        uses: aquasecurity/trivy-action@0.2.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: redis:latest
           format: 'sarif'
