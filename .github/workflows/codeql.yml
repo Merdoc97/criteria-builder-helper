@@ -24,7 +24,7 @@ jobs:
   analyze:
     name: Trivy Scan example
     runs-on:
-    - default-runner
+    - ubuntu-latest
     defaults:
       run:
         shell: bash
