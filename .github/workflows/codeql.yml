@@ -36,6 +36,16 @@ jobs:
           output: 'result.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
+        if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: 'result.sarif'  
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: always()
+        with:
+          webhook_url: https://teams.microsoft.com/l/channel/19%3a2721bc3f27be4731b3d47d79424bd7de%40thread.tacv2/notification%2520test?groupId=06d43c3e-0efd-4a45-88ca-a8806d8c726b&tenantId=0ae51e19-07c8-4e4b-bb6d-648ee58410f4
+          needs: ${{ toJson(needs) }}
+          job: ${{ toJson(job) }}
+          raw: "{ 'name': 'trivy scanner notification','result':'has failure steps'}"
+          dry_run: True
