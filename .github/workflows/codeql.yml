@@ -13,7 +13,7 @@ name: "Trivy"
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/1 * * * *'
 
 jobs:
   analyze:
