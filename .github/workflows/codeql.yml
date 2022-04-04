@@ -29,7 +29,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: adoptopenjdk/openjdk11:jre11u-2022-02-11-03-47-beta-nightly
-          format: 'json'
+          format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'MEDIUM' 
@@ -45,5 +45,5 @@ jobs:
           webhook_url: https://teams.microsoft.com/l/channel/19%3a2721bc3f27be4731b3d47d79424bd7de%40thread.tacv2/notification%2520test?groupId=06d43c3e-0efd-4a45-88ca-a8806d8c726b&tenantId=0ae51e19-07c8-4e4b-bb6d-648ee58410f4
           needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
-          overwrite: "{ 'title': 'Trivy scanner notification','summary':'has failure steps', 'text':'trivy scanner find vulrnerability job link ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}}'"
+          overwrite: "{ 'title': 'Trivy scanner notification','summary':'has failure steps', 'text':'trivy scanner find vulrnerability job link ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'}"
           dry_run: True
