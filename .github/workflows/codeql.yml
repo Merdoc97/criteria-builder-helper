@@ -34,7 +34,8 @@ jobs:
           vuln-type: 'os,library'
           severity: 'MEDIUM' 
           output: 'result.sarif'
-          exit-code: '1'
+      - name: Pring scan status
+        run: echo ${{ steps.trivy-scan.outputs.status }}
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
         if: steps.trivy-scan.outputs.status == 'failure'
